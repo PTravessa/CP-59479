@@ -1,0 +1,6 @@
+- criar repositório no github
+- git clone <url>
+- git add . #adicionar ficheiros ao repositório
+- git commit -m "Update do README."
+- git push #vai requisitar o ficheiro no repositório remoto
+- git init 
