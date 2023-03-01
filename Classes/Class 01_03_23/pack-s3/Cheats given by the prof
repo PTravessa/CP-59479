@@ -2,5 +2,5 @@
 - git clone <url>
 - git add . #adicionar ficheiros ao repositório
 - git commit -m "Update do README."
-- git push #vai requisitar o ficheiro no repositório remoto
-- git init #will be rejected if the other user already made changes in the file
+- git push #vai requisitar o ficheiro no repositório remoto #will be rejected if the other user already made changes in the file
+- git init
