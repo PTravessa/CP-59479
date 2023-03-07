@@ -26,4 +26,6 @@ with open(filename, 'w') as f:
     # ....
 ```
 
+## Shapes
+O enunciado está disponível na página da disciplina (formato PDF).
 
