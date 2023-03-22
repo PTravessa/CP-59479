@@ -1,5 +1,0 @@
-from shapes import Shape
-"""failing to import"""
-class Circle(Shape):
-    def __init__(self, type, color, border, width, height):
-        super().__init__(type, color, border, width, height)

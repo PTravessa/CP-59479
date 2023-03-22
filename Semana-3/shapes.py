@@ -5,7 +5,8 @@ class Shape:
         Args:
             type (Format Type): Format of the shape in question
             color (Self explanatory): The color present in each shape
-            border\ width \height (Represents the limit characteristic of the object)
+            border (Type of border line fillment)
+            width \height (Represents the limit characteristic of the object)
         """        
         self.type = type
         self.color = color
