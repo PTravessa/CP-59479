@@ -1,7 +1,7 @@
 from shapes import Shape
 class Circle(Shape):
     def __init__(self, type, color, border, width, height):
-        """_summary_
+        """Shape sub class for Circle
 
         Args:
             type (Format Type): Circle
