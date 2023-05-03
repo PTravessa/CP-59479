@@ -121,3 +121,21 @@ class CPImage(Serializable):
                 self.exif.update({"DataTime":date})
                 #print(data)
             # print(f"{tag:25}:{data}")
+    def get_dimensions(self):
+        self.imageFile = Image.open("#path")
+        width, height = self.imageFile.size
+        dimensions= (width, height)
+        return dimensions
+
+
+
+
+
+
+
+
+
+
+
+
+
