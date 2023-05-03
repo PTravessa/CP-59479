@@ -2,6 +2,10 @@ import json
 from abc import ABC, abstractmethod
 import os
 
+#For exif metadata
+from PIL import Image
+from PIL.ExifTags import TAGS
+
 class Serializable:
     def toJson(self, classInstance):
         #__dict__ contains attribute values of an object, show as a dictionary
@@ -77,7 +81,43 @@ class ImageCollection(CPCollection):
 
 
 class CPImage(Serializable):
-    def __init__(self, imageFile, exif, metadata):
+    def __init__(self, imageFile):
         self.imageFile = imageFile
-        self.exif = exif
-        self.metadata = metadata
+        self.path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+        image = Image.open(self.path+"//"+self.imageFile)
+        if image.getexif() is not None:
+            self.exif = image.getexif()
+            self.tags = self.getTags()
+        #self.metadata = metadata
+
+    def getDate(self):
+        return self.tags.get("DateTime")
+    
+    def getTags(self):
+        dict = {}
+        for tag_id in self.exif:
+            # get the tag name, instead of human unreadable tag id
+            tag = TAGS.get(tag_id, tag_id)
+            data = self.exif.get(tag_id)
+            # decode bytes 
+            if isinstance(data, bytes):
+                data = data.decode()
+            dict.update({tag:data})
+            # print(f"{tag:25}:{data}")
+        return dict
+    
+    #Nao esta a funcionar
+    def setDate(self, date): 
+        # self.tags.update({"DateTime": date})#Wrong, only updates the shallow copy dictionary
+        for tag_id in self.exif:
+            # get the tag name, instead of human unreadable tag id
+            tag = TAGS.get(tag_id, tag_id)
+            data = self.exif.get(tag_id)
+            # decode bytes 
+            if isinstance(data, bytes):
+                data = data.decode()
+            if tag == "DateTime":
+                data = date
+                self.exif.update({"DataTime":date})
+                #print(data)
+            # print(f"{tag:25}:{data}")
