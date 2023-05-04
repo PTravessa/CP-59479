@@ -82,30 +82,39 @@ class ImageCollection(CPCollection):
 
 class CPImage(Serializable):
     def __init__(self, imageFile):
+        """
+        CPImage class.
+        Args: Filename of the image file.
+        """
         self.imageFile = imageFile
         self.path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
-        image = Image.open(self.path+"//"+self.imageFile)
+        image = Image.open(self.path + "//" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
             self.tags = self.getTags()
-        #self.metadata = metadata
-
-    def getDate(self):
-        return self.tags.get("DateTime")
     
+    def getDate(self):
+        """
+        Gets the date of the image.
+        Returns: Date of the image in string format.
+        """
+        return self.tags.get("DateTime")
+
     def getTags(self):
+        """
+        Gets the EXIF tags of the image.
+        Returns: Dictionary containing the EXIF tags and their values.
+        """
         dict = {}
         for tag_id in self.exif:
-            # get the tag name, instead of human unreadable tag id
             tag = TAGS.get(tag_id, tag_id)
             data = self.exif.get(tag_id)
-            # decode bytes 
             if isinstance(data, bytes):
                 data = data.decode()
-            dict.update({tag:data})
-            # print(f"{tag:25}:{data}")
+            dict.update({tag: data})
         return dict
-    
+
+    """ 
     #Nao esta a funcionar
     def setDate(self, date): 
         # self.tags.update({"DateTime": date})#Wrong, only updates the shallow copy dictionary
@@ -118,14 +127,33 @@ class CPImage(Serializable):
                 data = data.decode()
             if tag == "DateTime":
                 data = date
-                self.exif.update({"DataTime":date})
+                self.exif.update({"DateTime":date})
                 #print(data)
-            # print(f"{tag:25}:{data}")
+            # print(f"{tag:25}:{data}")"""
+    #Estavas a usar a chave "DataTime" inves de "DateTime"
+    def setDate(self, date):
+        """
+        Sets the date of the image in string format.
+
+        """ 
+        for tag_id in self.exif:
+            tag = TAGS.get(tag_id, tag_id)
+            data = self.exif.get(tag_id)
+            if isinstance(data, bytes):
+               data = data.decode()
+            if tag == "DateTime":
+                data = date
+                self.exif.update({"DateTime": date})
+
     def get_dimensions(self):
-        self.imageFile = Image.open("#path")
-        width, height = self.imageFile.size
-        dimensions= (width, height)
-        return dimensions
+        """
+        Gets the dimensions of the image.
+        Returns: Tuple containing the width and height of the image.
+        """
+        image_path = self.path + '/' + self.imageFile
+        with Image.open(image_path) as img:
+            width, height = img.size
+        return (width, height)
 
 
 
