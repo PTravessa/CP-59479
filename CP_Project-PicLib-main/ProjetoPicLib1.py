@@ -42,7 +42,7 @@ class CPCollection(Serializable):
         return d
     
     def loadCollection(self):
-        with open("C:/Users/Andreas/Desktop/CP/Projeto1/"+self.filename, "r") as openfile:
+        with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
             json_object = json.load(openfile)
 
         print(json_object, type(json_object))
@@ -52,7 +52,7 @@ class CPCollection(Serializable):
     def elementFromJson(json):
         pass
 
-#cpCol = CPCollection("C:/Users/Andreas/Desktop/CP/Projeto1/"+"cpColTest.json", {"3boombooms", "Kaligula's friend", 3, "1JohnTron"})
+#cpCol = CPCollection("'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'"+"cpColTest.json", {"3boombooms", "Kaligula's friend", 3, "1JohnTron"})
 cpCol = CPCollection("cpColTest.json", {"3boombooms", "Kaligula's friend", 3, "1JohnTron"})
 cpCol.registerItem("Prroooprpr")
 
@@ -87,7 +87,7 @@ class CPImage(Serializable):
         Args: Filename of the image file.
         """
         self.imageFile = imageFile
-        self.path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+        self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
         image = Image.open(self.path + "//" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
