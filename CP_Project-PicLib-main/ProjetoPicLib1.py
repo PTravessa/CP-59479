@@ -122,17 +122,24 @@ class CPImage(Serializable):
         Sets the date of the image in string format.
 
         """ 
+        tag = []
+        tagId = []
         for tag_id in self.exif:
+            tag.append(TAGS.get(tag_id, tag_id))
+            tagId.append(tag_id)
+
+        if "DateTimeOriginal" in tag:
             image = Image.open(self.path+"//"+self.imageFile)
-            tag = TAGS.get(tag_id, tag_id)
-            if tag == "DateTimeOriginal":
-                self.exif[tag_id] = date
-                image.save(self.path+"//"+self.imageFile, exif = self.exif)
-                break
-            if tag == "DateTime":
-                self.exif[tag_id] = date
-                image.save(self.path+"//"+self.imageFile, exif = self.exif)
-                break
+            i = tag.index("DateTimeOriginal")
+            self.exif[tagId[i]] = date
+            print("On datetimeog")
+            image.save(self.path+"//"+self.imageFile, exif = self.exif)
+        elif "DateTime" in tag:
+            image = Image.open(self.path+"//"+self.imageFile)
+            i = tag.index("DateTime")
+            self.exif[tagId[i]] = date
+            print("On datetime")
+            image.save(self.path+"//"+self.imageFile, exif = self.exif)
     
 
 
@@ -151,7 +158,7 @@ class CPImage(Serializable):
 image1 = CPImage("IMG_20160812_200717168_HDR.jpg")
 print("Dimensions: "+str(image1.get_dimensions()))
 print("Original date"+image1.getDate()) #2016:08:12 20:07:18
-image1.setDate("2000:02:15 14:05:10")
+image1.setDate("2000:02:15 23:35:47")
 print("New date (may have to run again to see change though) "+image1.getDate())
 
 
