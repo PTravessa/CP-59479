@@ -42,7 +42,8 @@ class CPCollection(Serializable):
         return d
     
     def loadCollection(self):
-        with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
+        #with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
+        with open('C:/Users/Andreas/Desktop/CP/Projeto1/'+ self.filename, "r") as openfile:
             json_object = json.load(openfile)
 
         print(json_object, type(json_object))
@@ -87,7 +88,8 @@ class CPImage(Serializable):
         Args: Filename of the image file.
         """
         self.imageFile = imageFile
-        self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
+        #self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
+        self.path = 'C://Users//Andreas//Desktop//CP//fotos//AnaLibano'
         image = Image.open(self.path + "//" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
@@ -114,36 +116,25 @@ class CPImage(Serializable):
             dict.update({tag: data})
         return dict
 
-    """ 
-    #Nao esta a funcionar
-    def setDate(self, date): 
-        # self.tags.update({"DateTime": date})#Wrong, only updates the shallow copy dictionary
-        for tag_id in self.exif:
-            # get the tag name, instead of human unreadable tag id
-            tag = TAGS.get(tag_id, tag_id)
-            data = self.exif.get(tag_id)
-            # decode bytes 
-            if isinstance(data, bytes):
-                data = data.decode()
-            if tag == "DateTime":
-                data = date
-                self.exif.update({"DateTime":date})
-                #print(data)
-            # print(f"{tag:25}:{data}")"""
-    #Estavas a usar a chave "DataTime" inves de "DateTime"
+    
     def setDate(self, date):
         """
         Sets the date of the image in string format.
 
         """ 
         for tag_id in self.exif:
+            image = Image.open(self.path+"//"+self.imageFile)
             tag = TAGS.get(tag_id, tag_id)
-            data = self.exif.get(tag_id)
-            if isinstance(data, bytes):
-               data = data.decode()
+            if tag == "DateTimeOriginal":
+                self.exif[tag_id] = date
+                image.save(self.path+"//"+self.imageFile, exif = self.exif)
+                break
             if tag == "DateTime":
-                data = date
-                self.exif.update({"DateTime": date})
+                self.exif[tag_id] = date
+                image.save(self.path+"//"+self.imageFile, exif = self.exif)
+                break
+    
+
 
     def get_dimensions(self):
         """
@@ -155,6 +146,13 @@ class CPImage(Serializable):
             width, height = img.size
         return (width, height)
 
+
+
+image1 = CPImage("IMG_20160812_200717168_HDR.jpg")
+print("Dimensions: "+str(image1.get_dimensions()))
+print("Original date"+image1.getDate()) #2016:08:12 20:07:18
+image1.setDate("2000:02:15 14:05:10")
+print("New date (may have to run again to see change though) "+image1.getDate())
 
 
 
