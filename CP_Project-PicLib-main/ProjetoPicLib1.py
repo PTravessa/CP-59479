@@ -102,6 +102,10 @@ class ImageCollection(CPCollection):
                 jsonFiles.append(file)
                 cpImg = CPImage(file)
                 super().registerItem(cpImg)
+        if jsonFiles == []:
+         raise Exception("No json files found in folder")
+
+
 
     def findWithTag(self, tag):
         imgsWithTag = []
@@ -117,6 +121,7 @@ class ImageCollection(CPCollection):
         '''
         images = os.listdir(folder)
         return [item for item in images if item[-4:] == ".jpg"]
+    
     
 
 
