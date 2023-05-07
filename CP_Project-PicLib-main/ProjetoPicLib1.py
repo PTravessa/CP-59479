@@ -157,6 +157,11 @@ class CPImage(Serializable):
             # print("On datetime")
             image.save(self.path+"//"+self.imageFile, exif = self.exif)
     
+    def getImagefile(self):
+        """
+        Gets the name of the image file.
+        """
+        return self.imageFile
 
 
     def get_dimensions(self):
@@ -171,6 +176,9 @@ class CPImage(Serializable):
     
     @staticmethod
     def fromJson(json_dict):
+        """
+        Constructs a Image object from a json dictionary.
+        """
         filename = json_dict['filename']
         items = set(json_dict['items'])
         return CPCollection(filename, items)
