@@ -109,6 +109,16 @@ class ImageCollection(CPCollection):
             if tag in cpImg.getTagsList():
                 imgsWithTag.append(cpImg)
         return imgsWithTag
+    
+    @staticmethod
+    def allJPGFiles(folder):
+        '''
+        returns a list of all JPG type files from folder
+        '''
+        images = os.listdir(folder)
+        return [item for item in images if item[-4:] == ".jpg"]
+    
+
 
 
 class CPImage(Serializable):
