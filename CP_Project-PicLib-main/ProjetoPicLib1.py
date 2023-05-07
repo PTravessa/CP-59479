@@ -22,13 +22,13 @@ class Serializable:
 class CPCollection(Serializable):
     def __init__(self, filename, items):
         self.filename = filename
-            self.items = set(items) #A set of all CPImage filenames im guessing
-            self.items = set(items) #A set of all CPImage filenames im guessing
-        else:
-            self.items = {items}
+        self.items = set(items) #A set of all CPImage filenames im guessing
         self.items = set(items) #A set of all CPImage filenames im guessing
         else:
-            self.items = {items}
+        self.items = {items}
+        self.items = set(items) #A set of all CPImage filenames im guessing
+        else:
+        self.items = {items}
 
     #Adds an item to a collection
     def registerItem(self, item):
