@@ -52,7 +52,7 @@ class CPCollection(Serializable):
         # d = dict(filename=self.filename, items=[item for item in self.items])
         # jsonItem = json.dumps(item, ensure_ascii=False)
         jsonString = json.dumps(item.__dict__["imageFile"])
-        return {"Image": item.__dict__["imageFile"]}
+        return {"Image": [item.__dict__["imageFile"]]}
     
     @abstractmethod
     def elementFromJson(self, dict):
@@ -211,7 +211,20 @@ class CPImage(Serializable):
 
     #toJson() Ja definido no Serializable
     def toJson(self, filename): 
-        return {"filename": self.imageFile}
+        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etagId = []
+        for etag_id in self.exif:
+            etag.append(TAGS.get(etag_id, etag_id))
+            etagId.append(etag_id)
+
+        TAG_ID = 4660
+        TAGS[TAG_ID] = "Tags"
+        if TAG_ID in self.exif:
+            tags = self.getTags()
+            tags = tags.replace("\"", "")
+
+            l = tags.split(", ")
+        return {"filename": self.imageFile, "tags": l}
 
 
     #Tentei mas nao funciona
