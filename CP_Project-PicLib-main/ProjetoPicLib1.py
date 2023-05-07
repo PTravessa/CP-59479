@@ -21,26 +21,36 @@ class Serializable:
 class CPCollection(Serializable):
     def __init__(self, filename, items):
         self.filename = filename
-        self.items = items #A set
+        self.items = set(items) #A set of all CPImage filenames im guessing
 
     #Adds an item to a collection
     def registerItem(self, item):
         self.items.add(item)
 
     def saveCollection(self):
-        d = self.toJson()
-        #Serializing json
-        json_object = json.dumps(d, indent=4)
-        #Writing to sample .json
+        """
+        Saves the items in a file self.filename
+        """
+        l = []
+        for item in self.items:
+            item = self.toJson(item) #Nao modifica self.items, copia e modifica a copia
+            l.append(item)
+        
+        d = {"filename": self.filename, "items": l}
         with open(self.filename, "w") as outfile:
-            outfile.write(json_object)
+            outfile.write(d)
 
     def size(self):
         return len(self.items)
 
-    def toJson(self):
-        d = dict(filename=self.filename, items=[item for item in self.items])
-        return d
+    def toJson(self, item):
+        # d = dict(filename=self.filename, items=[item for item in self.items])
+        # jsonItem = json.dumps(item, ensure_ascii=False)
+        return item.__dict__
+    
+    @abstractmethod
+    def elementFromJson(self, dict):
+        pass
     
     def loadCollection(self):
         #with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
@@ -55,7 +65,7 @@ class CPCollection(Serializable):
         pass
 
 #cpCol = CPCollection("'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'"+"cpColTest.json", {"3boombooms", "Kaligula's friend", 3, "1JohnTron"})
-cpCol = CPCollection("cpColTest.json", {"3boombooms", "Kaligula's friend", 3, "1JohnTron"})
+cpCol = CPCollection("cpColTest.json", ["3boombooms", "Kaligula's friend", 3, "1JohnTron"])
 cpCol.registerItem("Prroooprpr")
 
 
@@ -68,6 +78,14 @@ class ImageCollection(CPCollection):
 
     @staticmethod #Have to add the decorator, bc it doesnt keep super class decorator
     def elementFromJson(json):
+        """Returns a CPImage
+
+        Args:
+            json (_dict_): _item.__dict___
+
+        Returns:
+            _CPImage_: __
+        """
         return CPImage.fromJson(json)
     
     #Imports a bunch of files if they're jpg,
@@ -77,13 +95,14 @@ class ImageCollection(CPCollection):
         files = os.listdir(folder)
         jsonFiles = []
         for file in files:
-            if str(file)[-5:-1]+str(file)[-1] == ".json":
+            if str(file)[-5:-1]+str(file)[-1] == ".json": #if the last 4 chars are ".json"
                 jsonFiles.append(file)
-                #Now just make it into a CPImage instance
+                cpImg = CPImage(file)
+                super().registerItem(cpImg)
 
 
 class CPImage(Serializable):
-    def __init__(self, imageFile):
+    def __init__(self, imageFile, path):
         """
         CPImage class.
         Args: Filename of the image file.
@@ -94,7 +113,7 @@ class CPImage(Serializable):
         image = Image.open(self.path + "//" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
-            self.etags = self.getExifTags()
+            self.etags = self.getTags()
     
     def getDate(self):
         """
@@ -174,15 +193,21 @@ class CPImage(Serializable):
             width, height = img.size
         return (width, height)
     
-    @staticmethod
-    def fromJson(json_dict):
-        """
-        Constructs a Image object from a json dictionary.
-        """
-        filename = json_dict['filename']
-        items = set(json_dict['items'])
-        return CPCollection(filename, items)
+    def getImageFile(self):
+        return self.imageFile
     
+    @staticmethod
+    def fromJson(jsonDict):
+        #I think jsonDict[0] will be a filename
+        if "imageFile" in jsonDict:
+            return CPImage(jsonDict["imageFile"])
+        cpImage = CPImage(jsonDict[0])
+
+    #toJson() Ja definido no Serializable
+    # def toJson(self, filename): 
+
+
+    #Tentei mas nao funciona
     def addTag(self, tag): 
         """
         Adds a tag string to the exif metadata of the image.
@@ -191,7 +216,6 @@ class CPImage(Serializable):
         etagId = []
         for etag_id in self.exif:
             etag.append(TAGS.get(etag_id, etag_id))
-            print("Etag "+str(etag))
             etagId.append(etag_id)
 
         # Open the image file
@@ -200,37 +224,66 @@ class CPImage(Serializable):
         TAG_ID = 4660
         TAGS[TAG_ID] = "Tags"
         allTags = self.getExifTags()
-        print(etag)
         if "Tags" not in etag:
-            print("Not Tags in self.exif")
-            # tempD = {TAG_ID: ({"Key0": tag})}
             tempD = {TAG_ID: tag}
-            # self.exif.update((tempD))
             self.exif[TAG_ID] = json.dumps(tempD[TAG_ID], ensure_ascii=False)
-            print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
             img.save(self.path+"//"+self.imageFile, exif = self.exif)
             img.close()
         if "Tags" in etag:
-            print("Tags in self.exif")
-            TAG_ID = 4660
-            # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
-            tempD = self.exif[TAG_ID]
-            # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
-            s = json.dumps(self.exif[TAG_ID] +", "+str(tag), ensure_ascii=False)
-            s=str(s).replace("\\", "")
-            s=str(s).replace("\"", "")
-            
-            # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
-            self.exif[TAG_ID] = s
-            # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
-            img.save(self.path+"//"+self.imageFile, exif = self.exif)
-            img.close()
+            if not self.hasTag(tag):
+                TAG_ID = 4660
+                # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
+                tempD = self.exif[TAG_ID]
+                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
+                s = json.dumps(str(self.exif[TAG_ID]) +", "+str(tag), ensure_ascii=False)
+                s=str(s).replace("\\", "")
+                s=str(s).replace("\"", "")
 
+                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
+                self.exif[TAG_ID] = s
+                # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
+                img.save(self.path+"//"+self.imageFile, exif = self.exif)
+                img.close()
+
+    def hasTag(self, tag):
+        """
+        Args: tag (_str_)
+        Returns: _bool_
+        """
+        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etagId = []
+        for etag_id in self.exif:
+            etag.append(TAGS.get(etag_id, etag_id))
+            etagId.append(etag_id)
+
+        TAG_ID = 4660
+        TAGS[TAG_ID] = "Tags"
+        if TAG_ID in self.exif:
+            tags = self.getTags()
+            tags = tags.replace("\"", "")
+
+            l = tags.split(", ")
+            if tag in l:
+                return True
+        return False
+    
+    def getTags(self):
+        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etagId = []
+        for etag_id in self.exif:
+            etag.append(TAGS.get(etag_id, etag_id))
+            etagId.append(etag_id)
+
+        # Open the image file
+        img = Image.open(self.path+"/"+self.imageFile)
+        TAG_ID = 4660
+        TAGS[TAG_ID] = "Tags"
+        if TAG_ID in self.exif:
+            return self.exif[TAG_ID]
+        else: 
+            return ""
         
 
-class Tag(Serializable):
-    def __init__(self, name):
-        self.name = name
 
 
 # Define a new tag ID for the "SomethingNew" tag
@@ -239,10 +292,8 @@ TAG_ID = 0x1234
 TAGS[TAG_ID] = "Tags"
 # Look up the tag ID for the "SomethingNew" tag
 new_tag_id = TAGS.get("Tags")
-# Print the tag ID
-print(new_tag_id)
 
-path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano" # Path Andreas
 import os
 # assign directory
  
@@ -256,29 +307,23 @@ for filename in os.listdir(path):
         # print(filename)
         fl.append(filename)
 
-image1 = CPImage(fl[10])
-# print("Dimensions: "+str(image1.get_dimensions()))
-# print("Original date"+str(image1.getDate())) #2016:08:12 20:07:18
-print("BEFORE Exif tags dict: "+str(image1.getExifTags()))
-# print("BEFORE Exif dict: "+str(image1.exif))
+image1 = CPImage(fl[16], path)
+image1.addTag("TestTag1")
 
-# image1.setDate("2000:02:15 23:35:42")
-# print("New date (may have to run again to see change though) "+image1.getDate())
-# print("Exif tags dict: "+str(image1.getExifTags()))
-# print("Exif dict: "+str(image1.exif))
-# print("\n add Tag TestTag \n print(image1.exif)")
+print("\n "+str(image1.__dict__))
 
-image1.addTag("TestTag2")
-print("the keys in self.exif "+str([x for x in image1.exif]))
-# image1.addTag("TestTag2")
-# print("image1.exif "+str(image1.exif))
-# print("image1.getExifTags() "+str(image1.getExifTags()))
+print("image1.hasTag(\"TestTag1\")" + str(image1.hasTag("TestTag1")))
+print("image1.getTags() ")
+print(image1.getTags())
 
-# image1.addTag("tag")
-print("image1.getExifTags() "+str(image1.getExifTags()))
-# print(image1.exif)
+print("\n image exif tags "+str(image1.getTags()))
 
 
-
-
-
+# Define a new tag ID for the "SomethingNew" tag
+TAG_ID = 0x1234
+# Add the new tag to the TAGS dictionary
+TAGS[TAG_ID] = "Tags"
+# Look up the tag ID for the "SomethingNew" tag
+new_tag_id = TAGS.get("Tags")
+# Print the tag ID
+print(new_tag_id)
