@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 import os
+import shutil
 
 #For exif metadata
 from PIL import Image
@@ -213,6 +214,17 @@ class CPImage(Serializable):
     def toJson(self, filename): 
         return {"filename": self.imageFile}
 
+    def copyToFolder(self, folder_path):
+        """
+        Copies the image to the given folder.
+        """
+        image_path = self.path + '/' + self.imageFile
+        try:
+            shutil.copy(image_path, folder_path)
+            return "File copied and located in {}".format(folder_path)
+        except Exception as error:
+            return "Error copying file: {}".format(str(error))
+
 
     #Tentei mas nao funciona
     def addTag(self, tag): 
@@ -303,6 +315,7 @@ TAGS[TAG_ID] = "Tags"
 new_tag_id = TAGS.get("Tags")
 
 path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano" # Path Andreas
+#path = "C://Users//ASUS//Desktop//Project Pics//AnaLibano" # Path PTravessa
 import os
 # assign directory
  
