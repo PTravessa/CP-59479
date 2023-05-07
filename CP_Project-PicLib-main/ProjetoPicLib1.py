@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 import os
+import shutil
 
 #For exif metadata
 from PIL import Image
@@ -21,8 +22,11 @@ class Serializable:
 class CPCollection(Serializable):
     def __init__(self, filename, items):
         self.filename = filename
-        if (items, '__iter__'): #If argument items is iterable
             self.items = set(items) #A set of all CPImage filenames im guessing
+            self.items = set(items) #A set of all CPImage filenames im guessing
+        else:
+            self.items = {items}
+        self.items = set(items) #A set of all CPImage filenames im guessing
         else:
             self.items = {items}
 
@@ -40,10 +44,8 @@ class CPCollection(Serializable):
             l.append(item)
         
         d = {"filename": self.filename, "items": l}
-        print("The dict list is "+str(d))
-        s = json.dumps(d)
         with open(self.filename, "w") as outfile:
-            outfile.write(s)
+            outfile.write(d)
 
     def size(self):
         return len(self.items)
@@ -51,8 +53,7 @@ class CPCollection(Serializable):
     def toJson(self, item):
         # d = dict(filename=self.filename, items=[item for item in self.items])
         # jsonItem = json.dumps(item, ensure_ascii=False)
-        jsonString = json.dumps(item.__dict__["imageFile"])
-        return {"Image": item.__dict__["imageFile"]}
+        return item.__dict__
     
     @abstractmethod
     def elementFromJson(self, dict):
@@ -210,8 +211,18 @@ class CPImage(Serializable):
         cpImage = CPImage(jsonDict[0])
 
     #toJson() Ja definido no Serializable
-    def toJson(self, filename): 
-        return {"filename": self.imageFile}
+    # def toJson(self, filename): 
+
+    def copyToFolder(self, folder_path):
+        """
+        Copies the image to the given folder.
+        """
+        image_path = self.path + '/' + self.imageFile
+        try:
+            shutil.copy(image_path, folder_path)
+            return "File copied and located in {}".format(folder_path)
+        except Exception as error:
+            return "Error copying file: {}".format(str(error))
 
 
     #Tentei mas nao funciona
@@ -303,6 +314,7 @@ TAGS[TAG_ID] = "Tags"
 new_tag_id = TAGS.get("Tags")
 
 path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano" # Path Andreas
+#path = "C://Users//ASUS//Desktop//Project Pics//AnaLibano" # Path PTravessa
 import os
 # assign directory
  
@@ -318,22 +330,21 @@ for filename in os.listdir(path):
 
 image1 = CPImage(fl[16], path)
 image1.addTag("TestTag1")
-img2 = CPImage(fl[2], path)
-img2.addTag("TestTag5")
 
 print("\n "+str(image1.__dict__))
 
-#TAG Testing
 print("image1.hasTag(\"TestTag1\")" + str(image1.hasTag("TestTag1")))
 print("image1.getTags() ")
 print(image1.getTags())
+
 print("\n image exif tags "+str(image1.getTags()))
 
-print("\n\n IMG1.__dict__ "+str(image1.__dict__))
-print("\n\n IMG2.__dict__ "+str(img2.__dict__))
 
-#ImageCollection Testing
-imgCol = ImageCollection("imageCollection1.txt", [image1])
-imgCol.registerItem(img2)
-
-imgCol.saveCollection()
+# Define a new tag ID for the "SomethingNew" tag
+TAG_ID = 0x1234
+# Add the new tag to the TAGS dictionary
+TAGS[TAG_ID] = "Tags"
+# Look up the tag ID for the "SomethingNew" tag
+new_tag_id = TAGS.get("Tags")
+# Print the tag ID
+print(new_tag_id)
