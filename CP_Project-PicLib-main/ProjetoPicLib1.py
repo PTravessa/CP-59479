@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
 import os
+import shutil
 
 #For exif metadata
 from PIL import Image
@@ -122,10 +123,6 @@ class ImageCollection(CPCollection):
         images = os.listdir(folder)
         return [item for item in images if item[-4:] == ".jpg"]
     
-    
-
-
-
 class CPImage(Serializable):
     def __init__(self, imageFile, path):
         """
@@ -171,6 +168,11 @@ class CPImage(Serializable):
         
         return dict
 
+    def copyToFolder(self, folder_path):
+        """
+        Copies the image to the folder.
+        """
+        shutil.copy(self.path + "//" + self.imageFile, folder_path)
     
     def setDate(self, date):
         """
