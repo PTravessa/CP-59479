@@ -170,10 +170,11 @@ class CPImage(Serializable):
         return (width, height)
     
     @staticmethod
-    def fromJson(jsonDict):
-        #I think jsonDict[0] will be a filename
-        cpImage = CPImage(jsonDict[0])
-
+    def fromJson(json_dict):
+        filename = json_dict['filename']
+        items = set(json_dict['items'])
+        return CPCollection(filename, items)
+    
     def addTag(self, tag): 
         """
         Adds a tag string to the exif metadata of the image.
