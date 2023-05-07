@@ -169,7 +169,6 @@ class CPImage(Serializable):
         #I think jsonDict[0] will be a filename
         cpImage = CPImage(jsonDict[0])
 
-    #Tentei mas nao funciona
     def addTag(self, tag): 
         """
         Adds a tag string to the exif metadata of the image.
@@ -181,58 +180,39 @@ class CPImage(Serializable):
             print("Etag "+str(etag))
             etagId.append(etag_id)
 
-        if "Tag" in etag:
-            image = Image.open(self.path + "//" + self.imageFile)
-            i = etag.index("Tag")
-            # Look up the tag ID for the "somethingNew" tag, or use a default value of -1 if it doesn't exist
-            TAG_ID = 0x1234
-            TAGS[TAG_ID] = "Tag"
-            new_tag_id = TAGS.get(TAG_ID, -1)
-            print("if: newTagId = "+str(new_tag_id))
+        # Open the image file
+        img = Image.open(self.path+"/"+self.imageFile)
+        
+        TAG_ID = 4660
+        TAGS[TAG_ID] = "Tags"
+        allTags = self.getExifTags()
+        print(etag)
+        if "Tags" not in etag:
+            print("Not Tags in self.exif")
+            # tempD = {TAG_ID: ({"Key0": tag})}
+            tempD = {TAG_ID: tag}
+            # self.exif.update((tempD))
+            self.exif[TAG_ID] = json.dumps(tempD[TAG_ID], ensure_ascii=False)
+            print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
+            img.save(self.path+"//"+self.imageFile, exif = self.exif)
+            img.close()
+        if "Tags" in etag:
+            print("Tags in self.exif")
+            TAG_ID = 4660
+            # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
+            tempD = self.exif[TAG_ID]
+            # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
+            s = json.dumps(self.exif[TAG_ID] +", "+str(tag), ensure_ascii=False)
+            s=str(s).replace("\\", "")
+            s=str(s).replace("\"", "")
+            
+            # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
+            self.exif[TAG_ID] = s
+            # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
+            img.save(self.path+"//"+self.imageFile, exif = self.exif)
+            img.close()
 
-            exif_dict = piexif.load(image.info["exif"])
-
-            # Check if the tag already exists in the tuple, if not adds it
-            if tag not in self.exif[TAG_ID]: #tag.encode -> dict in byte representation
-                # Create a tuple with the byte string as the second element and assign it to self.exif[TAG_ID]
-                new_tag_value = (tag.encode("utf-8"),)
-
-                # Add the new tag to the EXIF data
-                print( "str(self.exif[TAG_ID]) + str(new_tag_value) "+str((self.exif[TAG_ID],) + new_tag_value))
-                print("exif[id] "+str(self.exif[TAG_ID]))
-                # temp_d = {TAG_ID: tuple(self.exif[TAG_ID].decode()) + new_tag_value} #tuple+newTuple
-                temp_d = {TAG_ID: tuple(self.exif[TAG_ID]) + (tag,)} #tuple+newTuple
-                # new_tag = {TAG_ID: new_tag_value}
-                print("temp_d "+str(temp_d))
-                self.exif.update(temp_d)
-                print("self.exif after adding second tag "+str(self.exif))
-
-            # exif_bytes = piexif.dump(self.exif)
-            image.save(self.path + "//" + self.imageFile, exif=self.exif)
-            image.close()
-
-        else:
-            image = Image.open(self.path + "//" + self.imageFile)
-            # Look up the tag ID for the "Tag" tag, or use a default value of -1 if it doesn't exist
-            TAG_ID = 0x1234
-            TAGS[TAG_ID] = "Tag"
-            new_tag_id = TAGS.get(TAG_ID, -1) #TAG_ID 0x1234, returns -1 if not found
-            print("else: newTagId = "+str(new_tag_id))
-
-            new_tag_value = (tag,)
-
-            # Add the new tag to the EXIF data
-            new_tag = {TAG_ID: new_tag_value}
-            self.exif.update(new_tag)
-
-            exif_bytes = piexif.dump(self.exif) #piexif.dump -> exif in byte representation
-            print("\n\n The exif_bytes exif file")
-            print(exif_bytes)
-            image.save(self.path + "//" + self.imageFile, exif=self.exif)
-            image.close()
-
-
-
+        
 
 class Tag(Serializable):
     def __init__(self, name):
@@ -242,32 +222,47 @@ class Tag(Serializable):
 # Define a new tag ID for the "SomethingNew" tag
 TAG_ID = 0x1234
 # Add the new tag to the TAGS dictionary
-TAGS[TAG_ID] = "Tag"
+TAGS[TAG_ID] = "Tags"
 # Look up the tag ID for the "SomethingNew" tag
-new_tag_id = TAGS.get("Tag")
+new_tag_id = TAGS.get("Tags")
 # Print the tag ID
 print(new_tag_id)
 
+path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+import os
+# assign directory
+ 
+# iterate over files in
+# that directory
+fl = []
+for filename in os.listdir(path):
+    f = os.path.join(path, filename)
+    # checking if it is a file
+    if os.path.isfile(f):
+        # print(filename)
+        fl.append(filename)
 
-image1 = CPImage("P_20201226_145438.jpg")
-print("Dimensions: "+str(image1.get_dimensions()))
-print("Original date"+str(image1.getDate())) #2016:08:12 20:07:18
+image1 = CPImage(fl[10])
+# print("Dimensions: "+str(image1.get_dimensions()))
+# print("Original date"+str(image1.getDate())) #2016:08:12 20:07:18
 print("BEFORE Exif tags dict: "+str(image1.getExifTags()))
-print("BEFORE Exif dict: "+str(image1.exif))
+# print("BEFORE Exif dict: "+str(image1.exif))
 
 # image1.setDate("2000:02:15 23:35:42")
 # print("New date (may have to run again to see change though) "+image1.getDate())
 # print("Exif tags dict: "+str(image1.getExifTags()))
 # print("Exif dict: "+str(image1.exif))
 # print("\n add Tag TestTag \n print(image1.exif)")
-# # image1.addTag("TestTag")
+
+image1.addTag("TestTag2")
+print("the keys in self.exif "+str([x for x in image1.exif]))
 # image1.addTag("TestTag2")
 # print("image1.exif "+str(image1.exif))
 # print("image1.getExifTags() "+str(image1.getExifTags()))
 
-image1.addTag("tag2")
+# image1.addTag("tag")
 print("image1.getExifTags() "+str(image1.getExifTags()))
-print(image1.exif)
+# print(image1.exif)
 
 
 
