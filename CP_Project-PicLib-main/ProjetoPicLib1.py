@@ -386,6 +386,8 @@ imgCol.registerItem(image1)
 
 imgCol.saveCollection()
 
-print(imgCol.findWithTag("TestTag1"))
+cpImgs1 =imgCol.findWithTag("TestTag1")
+for cpImg in cpImgs1:
+    print("CPImage = "+str(cpImg)+" file = "+str(cpImg.getImageFile()))
 print("\n\n load imgCol ")
 imgCol.loadCollection()
