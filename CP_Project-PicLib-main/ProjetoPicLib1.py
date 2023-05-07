@@ -25,6 +25,7 @@ class CPCollection(Serializable):
             self.items = set(items) #A set of all CPImage filenames im guessing
         else:
             self.items = {items}
+            self.items = {items}
 
     #Adds an item to a collection
     def registerItem(self, item):
@@ -92,6 +93,7 @@ class ImageCollection(CPCollection):
     #Imports a bunch of files if they're jpg,
     #for every file found, create an CPImage and 
     #add for collection
+    @staticmethod
     def scanFolder(folder):
         files = os.listdir(folder)
         jsonFiles = []
