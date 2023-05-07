@@ -101,7 +101,12 @@ class CPImage(Serializable):
         Gets the date of the image.
         Returns: Date of the image in string format.
         """
-        return self.etags.get("DateTime")
+        if "DateTimeOriginal" in self.etags:
+            return self.etags.get("DateTimeOriginal")
+        elif "DateTime" in self.etags:
+            return self.etags.get("DateTime")
+        else:
+            print("No DateTimeOriginal or DateTime key in exif tags")
 
     def getExifTags(self):
         """
