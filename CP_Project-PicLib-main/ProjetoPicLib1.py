@@ -53,7 +53,8 @@ class CPCollection(Serializable):
     def toJson(self, item):
         # d = dict(filename=self.filename, items=[item for item in self.items])
         # jsonItem = json.dumps(item, ensure_ascii=False)
-        return item.__dict__
+        jsonString = json.dumps(item.__dict__["imageFile"])
+        return {"Image": item.__dict__["imageFile"]}
     
     @abstractmethod
     def elementFromJson(self, dict):
@@ -211,18 +212,8 @@ class CPImage(Serializable):
         cpImage = CPImage(jsonDict[0])
 
     #toJson() Ja definido no Serializable
-    # def toJson(self, filename): 
-
-    def copyToFolder(self, folder_path):
-        """
-        Copies the image to the given folder.
-        """
-        image_path = self.path + '/' + self.imageFile
-        try:
-            shutil.copy(image_path, folder_path)
-            return "File copied and located in {}".format(folder_path)
-        except Exception as error:
-            return "Error copying file: {}".format(str(error))
+    def toJson(self, filename): 
+        return {"filename": self.imageFile}
 
 
     #Tentei mas nao funciona
