@@ -25,10 +25,10 @@ class CPCollection(Serializable):
         self.items = set(items) #A set of all CPImage filenames im guessing
         self.items = set(items) #A set of all CPImage filenames im guessing
         else:
-        self.items = {items}
+            self.items = {items}
         self.items = set(items) #A set of all CPImage filenames im guessing
         else:
-        self.items = {items}
+            self.items = {items}
 
     #Adds an item to a collection
     def registerItem(self, item):
@@ -99,6 +99,7 @@ class ImageCollection(CPCollection):
     #Imports a bunch of files if they're jpg,
     #for every file found, create an CPImage and 
     #add for collection
+    @staticmethod
     def scanFolder(folder):
         files = os.listdir(folder)
         jsonFiles = []
@@ -107,6 +108,15 @@ class ImageCollection(CPCollection):
                 jsonFiles.append(file)
                 cpImg = CPImage(file)
                 super().registerItem(cpImg)
+    
+    def FindWithTag(self,tag):
+        """
+        Finds the CPImage with the json file tag 
+        """
+        return { item for item in self.items if item.hasTag(tag) }
+    
+
+        
 
 
 class CPImage(Serializable):
@@ -339,8 +349,3 @@ TAGS[TAG_ID] = "Tags"
 new_tag_id = TAGS.get("Tags")
 # Print the tag ID
 print(new_tag_id)
-
-
-
-
-
