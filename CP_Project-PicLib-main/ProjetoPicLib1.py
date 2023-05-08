@@ -124,18 +124,19 @@ class ImageCollection(CPCollection):
         return [item for item in images if item[-4:] == ".jpg"]
     
 class CPImage(Serializable):
-    def __init__(self, imageFile, path):
+    def __init__(self, imageFile, dirPath = 'C://Users//Andreas//Desktop//CP//fotos//AnaLibano'):
         """
         CPImage class.
         Args: Filename of the image file.
         """
         self.imageFile = imageFile
         #self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
-        self.path = 'C://Users//Andreas//Desktop//CP//fotos//AnaLibano'
-        image = Image.open(self.path + "//" + self.imageFile)
+        self.path = dirPath
+        print(self.path)
+        image = Image.open(self.path + "/" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
-            self.etags = self.getTags()
+            self.etags = self.getExifTags()
     
     def getDate(self):
         """
@@ -148,6 +149,7 @@ class CPImage(Serializable):
             return self.etags.get("DateTime")
         else:
             print("No DateTimeOriginal or DateTime key in exif tags")
+            return ""
 
     def getExifTags(self):
         """
@@ -168,11 +170,50 @@ class CPImage(Serializable):
         
         return dict
 
-    def copyToFolder(self, folder_path):
+    @staticmethod
+    def makeCPImage(filename, dir_path):
+        cpImage = CPImage(filename, dir_path)
+        date = cpImage.getDate()
+        date = date.split(":")
+        year = date[0]
+        #List of the names of sub folders of album 
+        folder_path= 'C:/Users/Andreas/Desktop/CP/collectionsRootFolder'
+        directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
+        fileNames = [x.split("/")[-1] for x in directoryPaths] 
+        newPath = folder_path+"/"+year
+        print(fileNames)
+        print(year)
+        if year not in fileNames: #If there is no year album, create one
+            os.mkdir(newPath)
+        if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
+            shutil.copy(cpImage.path+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
+        else:
+            print("Image file already in folder")        
+        return CPImage(cpImage.imageFile, newPath)
+
+    def copyToFolder(self, folder_path='C:/Users/Andreas/Desktop/CP/collectionsRootFolder'):
         """
         Copies the image to the folder.
         """
-        shutil.copy(self.path + "//" + self.imageFile, folder_path)
+        date = self.getDate()
+        date = date.split(":")
+        year = date[0]
+        #List of the names of sub folders of album 
+        directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
+        print(directoryPaths)
+        fileNames = [x.split("/")[-1] for x in directoryPaths] 
+        newPath = folder_path+"/"+year
+        print(fileNames)
+        print(year)
+        if year not in fileNames: #If there is no year album, create one
+            os.mkdir(newPath)
+        if not os.path.isfile(newPath+"/"+self.imageFile): 
+            shutil.copy(self.path+"/"+self.imageFile, newPath+"/"+self.imageFile)
+        else:
+            print("Image file already in folder")
+        
+
+        # shutil.copy(self.path + "//" + self.imageFile, folder_path)
     
     def setDate(self, date):
         """
@@ -196,12 +237,14 @@ class CPImage(Serializable):
             self.exif[etagId[i]] = date
             # print("On datetimeog")
             image.save(self.path+"//"+self.imageFile, exif = self.exif)
+            image.close()
         elif "DateTime" in etag:
             image = Image.open(self.path+"//"+self.imageFile)
             i = etag.index("DateTime")
             self.exif[etagId[i]] = date
             # print("On datetime")
             image.save(self.path+"//"+self.imageFile, exif = self.exif)
+            image.close()
     
     def getImagefile(self):
         """
@@ -315,8 +358,6 @@ class CPImage(Serializable):
             etag.append(TAGS.get(etag_id, etag_id))
             etagId.append(etag_id)
 
-        # Open the image file
-        img = Image.open(self.path+"/"+self.imageFile)
         TAG_ID = 4660
         TAGS[TAG_ID] = "Tags"
         if TAG_ID in self.exif:
@@ -391,3 +432,12 @@ for cpImg in cpImgs1:
     print("CPImage = "+str(cpImg)+" file = "+str(cpImg.getImageFile()))
 print("\n\n load ImgCol ")
 imgCol.loadCollection()
+
+# print("\n\n exif tags img1 = "+str(image1.getExifTags()))
+# image1.copyToFolder()
+# print("\n\n image1.etags[\"DateTime\"] = " + str(image1.etags["DateTime"]))
+# print("\n\n img tags img1 = "+str(image1.getTags()))
+print("fl[4] = " + str(fl[4]) + " path = " + str(path))
+imageTest = CPImage.makeCPImage(fl[4], path)
+print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
+print("fl[4]" + str(fl[4]) + "path" + str(path))
