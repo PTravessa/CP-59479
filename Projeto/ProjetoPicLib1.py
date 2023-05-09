@@ -1,4 +1,4 @@
-import json
+
 from abc import ABC, abstractmethod
 import os
 import shutil
@@ -189,7 +189,7 @@ class CPImage(Serializable):
             shutil.copy(cpImage.path+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
         else:
             print("Image file already in folder")        
-        return CPImage(cpImage.imageFile, newPath)
+        return CPImage(cpImage.imageFile)
 
     def copyToFolder(self, folder_path='C:/Users/Andreas/Desktop/CP/collectionsRootFolder'):
         """
@@ -218,6 +218,7 @@ class CPImage(Serializable):
     def setDate(self, date):
         """
         Sets the date of the image in string format.
+        Args: date in str "2000:10:23 07/07/30"
 
         """ 
         # Define the new Exif tag ID and name
@@ -246,7 +247,7 @@ class CPImage(Serializable):
             image.save(self.path+"//"+self.imageFile, exif = self.exif)
             image.close()
     
-    def getImagefile(self):
+    def getImageFile(self):
         """
         Gets the name of the image file.
         """
@@ -262,9 +263,6 @@ class CPImage(Serializable):
         with Image.open(image_path) as img:
             width, height = img.size
         return (width, height)
-    
-    def getImageFile(self):
-        return self.imageFile
     
     @staticmethod
     def fromJson(jsonDict):
@@ -291,7 +289,6 @@ class CPImage(Serializable):
         return {"filename": self.imageFile, "tags": l}
 
 
-    #Tentei mas nao funciona
     def addTag(self, tag): 
         """
         Adds a tag string to the exif metadata of the image.
@@ -328,6 +325,47 @@ class CPImage(Serializable):
                 # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
                 img.save(self.path+"//"+self.imageFile, exif = self.exif)
                 img.close()
+
+    def removeTag(self, tag): 
+        """
+        Removes a tag string from the exif metadata of the image.
+        """ 
+        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etagId = []
+        for etag_id in self.exif:
+            etag.append(TAGS.get(etag_id, etag_id))
+            etagId.append(etag_id)
+
+        # Open the image file
+        img = Image.open(self.path+"/"+self.imageFile)
+        
+        TAG_ID = 4660
+        TAGS[TAG_ID] = "Tags"
+        allTags = self.getExifTags()
+
+        if "Tags" in etag:
+            if self.hasTag(tag):
+                TAG_ID = 4660
+                # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
+                tempD = self.exif[TAG_ID]
+                tl = self.getTagsList()
+                tl.remove(tag)
+                s = ", ".join(tl)
+                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
+                s = json.dumps(s, ensure_ascii=False)#str(tl, ensure_ascii=False)
+                print(s)
+                # s=str(s).replace("\\", "")
+                # s=str(s).replace("\"", "")
+
+                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
+                self.exif[TAG_ID] = s
+                # # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
+                img.save(self.path+"//"+self.imageFile, exif = self.exif)
+                img.close()
+            else:
+                print("Tag is not in image Tags")
+        else:
+            print("No Exif tag name \"Tag\" in exif metadata")
 
     def hasTag(self, tag):
         """
@@ -412,32 +450,38 @@ img2.addTag("TestTag5")
 print("\n "+str(image1.__dict__))
 
 #TAG Testing
-print("image1.hasTag(\"TestTag1\")" + str(image1.hasTag("TestTag1")))
 print("image1.getTags() ")
 print(image1.getTags())
-print("\n image exif tags "+str(image1.getTags()))
+print("\n image1 exif tags "+str(image1.getTags()))
+print("\n img2 exif tags "+str(img2.getTags()))
+print("\n img2 remove tag")
+img2.removeTag("TestTag1")
+print("\n img2 exif tags "+str(img2.getTags()))
+
 
 print("\n\n IMG1.__dict__ "+str(image1.__dict__))
 print("\n\n IMG2.__dict__ "+str(img2.__dict__))
 
 #ImageCollection Testing
-imgCol = ImageCollection("imageCollection1.txt", [image1])
-imgCol.registerItem(img2)
-imgCol.registerItem(image1)
+# imgCol = ImageCollection("imageCollection1.txt", [image1])
+# imgCol.registerItem(img2)
+# imgCol.registerItem(image1)
 
-imgCol.saveCollection()
+# imgCol.saveCollection()
 
-cpImgs1 =imgCol.findWithTag("TestTag1")
-for cpImg in cpImgs1:
-    print("CPImage = "+str(cpImg)+" file = "+str(cpImg.getImageFile()))
-print("\n\n load ImgCol ")
-imgCol.loadCollection()
+# cpImgs1 =imgCol.findWithTag("TestTag1")
+# for cpImg in cpImgs1:
+#     print("CPImage = "+str(cpImg)+" file = "+str(cpImg.getImageFile()))
+# print("\n\n load ImgCol ")
+# imgCol.loadCollection()
 
 # print("\n\n exif tags img1 = "+str(image1.getExifTags()))
 # image1.copyToFolder()
 # print("\n\n image1.etags[\"DateTime\"] = " + str(image1.etags["DateTime"]))
 # print("\n\n img tags img1 = "+str(image1.getTags()))
-print("fl[4] = " + str(fl[4]) + " path = " + str(path))
-imageTest = CPImage.makeCPImage(fl[4], path)
-print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
-print("fl[4]" + str(fl[4]) + "path" + str(path))
+
+
+# print("fl[4] = " + str(fl[4]) + " path = " + str(path))
+# imageTest = CPImage.makeCPImage(fl[4], path)
+# print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
+# print("fl[4]" + str(fl[4]) + "path" + str(path))
