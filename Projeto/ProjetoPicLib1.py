@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import os
 import shutil
+import json
 
 #For exif metadata
 from PIL import Image
@@ -133,7 +134,7 @@ class CPImage(Serializable):
         #self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
         self.path = dirPath
         print(self.path)
-        image = Image.open(self.path + "/" + self.imageFile)
+        image = Image.open(self.path + "//" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
             self.etags = self.getExifTags()
@@ -267,8 +268,8 @@ class CPImage(Serializable):
     @staticmethod
     def fromJson(jsonDict):
         #I think jsonDict[0] will be a filename
-        if "imageFile" in jsonDict:
-            return CPImage(jsonDict["imageFile"])
+        if "filename" in jsonDict:
+            return CPImage(jsonDict["filename"])
         cpImage = CPImage(jsonDict[0])
 
     #toJson() Ja definido no Serializable
@@ -455,7 +456,7 @@ print(image1.getTags())
 print("\n image1 exif tags "+str(image1.getTags()))
 print("\n img2 exif tags "+str(img2.getTags()))
 print("\n img2 remove tag")
-img2.removeTag("TestTag1")
+img2.removeTag("TestTag2")
 print("\n img2 exif tags "+str(img2.getTags()))
 
 
