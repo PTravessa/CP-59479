@@ -23,20 +23,27 @@ class Chrono(App):
         # The row of buttons is also a BoxLayout:
         buttonRow = BoxLayout(orientation='horizontal', spacing=20, padding=15)
         # A label is used to display the time:
-        self.label = Label(text=self.getTime(), font_size=70,
-                           color=(1, 1, 1, 1))
+        self.label = Label(text=self.getTime(), font_size=90,
+                           color=(231/255, 98/255, 203/255, 1))
+        # A label to show the saved times
+        self.label2 = Label(text=self.getTime(), font_size=90,color=(231/255, 98/255, 203/255, 1))
         # The first button is for Start/Pause/Resume the chronograph
         self.button1 = Button(text='Start', font_size=50)
         # The second button is for resetting the chronograph
         self.button2 = Button(text='Reset', font_size=50)
+        # The third button is for saving the time
+        self.button3 = Button(text='Save', font_size=50)
         # Add widgets to layouts:
         box.add_widget(self.label)
-        buttonRow.add_widget(self.button1)
-        buttonRow.add_widget(self.button2)
+        box.add_widget(self.label2)
         box.add_widget(buttonRow)
+        buttonRow.add_widget(self.button1)
+        buttonRow.add_widget(self.button3)
+        buttonRow.add_widget(self.button2)
         # Set the methods that will be called when buttons are pressed:
         self.button1.bind(on_press=self.startPausePressed)
         self.button2.bind(on_press=self.resetPressed)
+        self.button3.bind(on_press=self.savePressed) 
         # Define an attribute that will hold a periodic event for the
         # chronograph
         self.chronoEvent = None
@@ -90,6 +97,12 @@ class Chrono(App):
             self.chronoEvent = Clock.schedule_interval(self.setTimeValue,
                                                        1.0/100)
             self.button1.text = 'Pause'
+    def savePressed(self, b):
+            if self.button3.text == "Save":
+                self.label2.text = self.getTime()
+                self.button3.text = "Save"
+
+
 
 
 # testing
