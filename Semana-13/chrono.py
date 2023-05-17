@@ -8,8 +8,7 @@ from kivy.core.window import Window
 
 from datetime import datetime
 
-Window.size = (600, 360)
-
+Window.size = (900,600)
 
 # A kivy application is made by sub-classing the App kivy class:
 class Chrono(App):
@@ -19,14 +18,36 @@ class Chrono(App):
         # the start attribute is used to display the elapsed time:
         self.start = datetime.now()
         # All widgets will be arranged in a vertical BoxLayout:
-        box = BoxLayout(orientation='vertical', padding=50, spacing=20)
+        box = BoxLayout(orientation='vertical', padding=10, spacing=10)
         # The row of buttons is also a BoxLayout:
         buttonRow = BoxLayout(orientation='horizontal', spacing=20, padding=15)
+        # first row of saved times
+        savedTimes1 = BoxLayout(orientation='horizontal', spacing=9, padding=12)
+        # second row of saved times
+        savedTimes2 = BoxLayout(orientation='horizontal', spacing=9, padding=12)
         # A label is used to display the time:
-        self.label = Label(text=self.getTime(), font_size=90,
+        self.label = Label(text=self.getTime(), font_size=100,
                            color=(231/255, 98/255, 203/255, 1))
-        # A label to show the saved times
-        self.label2 = Label(text=self.getTime(), font_size=90,color=(231/255, 98/255, 203/255, 1))
+        # A label to show the saved times 1
+        self.label2 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 2
+        self.label3 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 3
+        self.label4 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 4
+        self.label5 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 5
+        self.label6 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 6
+        self.label7 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 7
+        self.label8 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 8
+        self.label9 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 9
+        self.label10 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
+        # A label to show the saved times 10
+        self.label11 = Label(text=" ", font_size=50,color=(0, 98/255, 203/255, 1))
         # The first button is for Start/Pause/Resume the chronograph
         self.button1 = Button(text='Start', font_size=50)
         # The second button is for resetting the chronograph
@@ -35,7 +56,17 @@ class Chrono(App):
         self.button3 = Button(text='Save', font_size=50)
         # Add widgets to layouts:
         box.add_widget(self.label)
-        box.add_widget(self.label2)
+        box.add_widget(savedTimes1)
+        box.add_widget(savedTimes2)
+        savedTimes1.add_widget(self.label2)
+        savedTimes1.add_widget(self.label3)
+        savedTimes1.add_widget(self.label4)
+        savedTimes1.add_widget(self.label5)
+        savedTimes1.add_widget(self.label6)
+        savedTimes2.add_widget(self.label7)
+        savedTimes2.add_widget(self.label8)
+        savedTimes2.add_widget(self.label9)
+        savedTimes2.add_widget(self.label10)
         box.add_widget(buttonRow)
         buttonRow.add_widget(self.button1)
         buttonRow.add_widget(self.button3)
@@ -43,7 +74,7 @@ class Chrono(App):
         # Set the methods that will be called when buttons are pressed:
         self.button1.bind(on_press=self.startPausePressed)
         self.button2.bind(on_press=self.resetPressed)
-        self.button3.bind(on_press=self.savePressed) 
+        self.button3.bind(on_press=self.savePressed)
         # Define an attribute that will hold a periodic event for the
         # chronograph
         self.chronoEvent = None
@@ -75,7 +106,14 @@ class Chrono(App):
         It resets the chronograph.
         """
         self.start = datetime.now()
+        self.label.text = self.getTime()
 
+        labels = [self.label2, self.label3, self.label4, self.label5, self.label6,
+                self.label7, self.label8, self.label9, self.label10, self.label11]
+
+        for label in labels:
+            label.text = " "
+            
     def startPausePressed(self, b):
         """
         startPausePressed is called when the Start/Pause/Resume
@@ -98,13 +136,14 @@ class Chrono(App):
                                                        1.0/100)
             self.button1.text = 'Pause'
     def savePressed(self, b):
-            if self.button3.text == "Save":
-                self.label2.text = self.getTime()
-                self.button3.text = "Save"
+        labels = [self.label2, self.label3, self.label4, self.label5, self.label6,
+                self.label7, self.label8, self.label9, self.label10, self.label11]
 
+        for i in range(len(labels)):
+            if labels[i].text == " ":
+                labels[i].text = self.label.text
+                break
 
-
-
-# testing
+    
 
 Chrono().run()
