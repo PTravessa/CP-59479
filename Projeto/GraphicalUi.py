@@ -28,6 +28,10 @@ class PicLib(App):
         self.top_row = None  # BoxLayout
         self.bottom_row = None  # BoxLayout
         self.main_panel = None  # BoxLayout
+        self.page_number = 1
+        self.total_pages = 1
+        self.images_per_page = 25
+        self.page_label = None
 
     def build(self):
         self.create_top_row()
@@ -51,6 +55,17 @@ class PicLib(App):
         bottom_row_label = Label(text='Main Page', font_size=30)
         self.bottom_row.add_widget(bottom_row_label)
 
+        prev_button = Button(text='<', font_size=20, size_hint=(0.1, 0.99))
+        next_button = Button(text='>', font_size=20, size_hint=(0.1, 0.99))
+        prev_button.bind(on_press=self.go_to_previous_page)
+        next_button.bind(on_press=self.go_to_next_page)
+        self.bottom_row.add_widget(prev_button)
+
+        self.page_label = Label(text='Page 1', font_size=20, size_hint=(0.1, 0.99))
+        self.bottom_row.add_widget(self.page_label)
+
+        self.bottom_row.add_widget(next_button)
+
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
         button_bar = self.create_button_bar()
@@ -59,18 +74,14 @@ class PicLib(App):
         self.main_panel.add_widget(button_bar)
         self.main_panel.add_widget(image_display)
 
+        self.image_display = image_display
+
         # Load and display images from folder
         image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-        images = self.load_images_from_folder(image_folder)
-        row_layout = None
-        for i, image_path in enumerate(images, 1):
-            if i % 5 == 1:
-                # Create a new row for every 5th image
-                row_layout = BoxLayout(orientation='horizontal', size_hint=(0.99, None), height='96dp')
-                image_display.add_widget(row_layout)
+        self.images = self.load_images_from_folder(image_folder)
+        self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+        self.update_image_display()
 
-            image = AsyncImage(source=image_path)
-            row_layout.add_widget(image)
 
     def create_button_bar(self):
         button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
@@ -96,8 +107,40 @@ class PicLib(App):
                 images.append(os.path.join(folder_path, filename))
         return images
 
-PicLib().run()
+    def update_image_display(self):
+        self.image_display.clear_widgets()
 
+        start_index = (self.page_number - 1) * self.images_per_page
+        end_index = self.page_number * self.images_per_page
+        images_to_display = self.images[start_index:end_index]
+
+        rows = len(images_to_display) // 5  # Number of rows to create
+        if len(images_to_display) % 5 != 0:
+            rows += 1
+
+        for i in range(rows):
+            row_images = images_to_display[i * 5:(i + 1) * 5]
+
+            row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
+            for image_path in row_images:
+                image = AsyncImage(source=image_path)
+                row_layout.add_widget(image)
+
+            self.image_display.add_widget(row_layout)
+        self.page_label.text = f'Page {self.page_number}'
+
+    def go_to_previous_page(self, instance): #Must be instance so that kivy understands, it cannot be **kwargs
+        if self.page_number > 1:
+            self.page_number -= 1
+            self.update_image_display()
+
+    def go_to_next_page(self, instance): #Must be instance so that kivy understands, it cannot be **kwargs
+        if self.page_number < self.total_pages:
+            self.page_number += 1
+            self.update_image_display()
+
+
+PicLib().run()
 
 """Temos o layout das 3 caixas necessárias +1 classe para colocar cor na label,
 os botões das tags estão definidos no entanto
