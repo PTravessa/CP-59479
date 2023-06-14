@@ -62,9 +62,15 @@ class PicLib(App):
         # Load and display images from folder
         image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         images = self.load_images_from_folder(image_folder)
-        for image_path in images:
+        row_layout = None
+        for i, image_path in enumerate(images, 1):
+            if i % 5 == 1:
+                # Create a new row for every 5th image
+                row_layout = BoxLayout(orientation='horizontal', size_hint=(0.99, None), height='96dp')
+                image_display.add_widget(row_layout)
+
             image = AsyncImage(source=image_path)
-            image_display.add_widget(image)
+            row_layout.add_widget(image)
 
     def create_button_bar(self):
         button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
