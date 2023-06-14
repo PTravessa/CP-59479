@@ -1,12 +1,13 @@
-import kivy
+import os
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.image import AsyncImage
 from kivy.graphics import Rectangle, Color
 
 class BrownBoxLayout(BoxLayout):
-    #Class for brown box in label
+    # Class for brown box in label
     def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
         super().__init__(**kwargs)
         with self.canvas.before:
@@ -23,32 +24,16 @@ class BrownBoxLayout(BoxLayout):
 
 class PicLib(App):
     def __init__(self, **kwargs):
-        """
-        Initialize the PicLib.
-
-        Args:
-            kwargs: Keyword arguments.
-
-        Returns:
-            None by Default
-        """
         super().__init__(**kwargs)
-        self.top_row = None  #BoxLayout
-        self.bottom_row = None  #BoxLayout
-        self.main_panel = None  #BoxLayout
+        self.top_row = None  # BoxLayout
+        self.bottom_row = None  # BoxLayout
+        self.main_panel = None  # BoxLayout
 
     def build(self):
-        """
-        Builds the main interface.
-
-        Returns:
-            BoxLayout: The main layout of the app.
-        """
         self.create_top_row()
         self.create_bottom_row()
         self.create_main_panel()
 
-        # Main Layout
         main_layout = BoxLayout(orientation='vertical')
         main_layout.add_widget(self.top_row)
         main_layout.add_widget(self.main_panel)
@@ -57,12 +42,6 @@ class PicLib(App):
         return main_layout
 
     def create_top_row(self):
-        """
-        Creates the top row of the application.
-
-        Returns:
-            Nothing, Top filler panel.
-        """
         self.top_row = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         top_row_label = Label(text='PicLib', font_size=40)
         self.top_row.add_widget(top_row_label)
@@ -71,14 +50,8 @@ class PicLib(App):
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         bottom_row_label = Label(text='Main Page', font_size=30)
         self.bottom_row.add_widget(bottom_row_label)
-        
-    def create_main_panel(self):
-        """
-        Creates the main panel of the application.
 
-        Returns:
-            Nothing, Main filler panel.
-        """
+    def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
         button_bar = self.create_button_bar()
         image_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
@@ -86,20 +59,15 @@ class PicLib(App):
         self.main_panel.add_widget(button_bar)
         self.main_panel.add_widget(image_display)
 
+        # Load and display images from folder
+        image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        images = self.load_images_from_folder(image_folder)
+        for image_path in images:
+            image = AsyncImage(source=image_path)
+            image_display.add_widget(image)
+
     def create_button_bar(self):
-        """
-        Creates the button bar of the application.
-
-        Returns:
-            BoxLayout: The Left button bar layout.
-        """
         button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
-
-        """add_tags_button = Button(text='+T', font_size=20, background_color=(0.580, 1, 0.855))
-        remove_tags_button = Button(text='-T', font_size=20, background_color=(0.580, 1, 0.855))
-        search_button = Button(text='S', font_size=20, background_color=(0.580, 1, 0.855))
-        zip_button = Button(text='Zip', font_size=20, background_color=(0.580, 1, 0.855))
-        rotate_button = Button(text='R90', font_size=20, background_color=(0.580, 1, 0.855))"""
 
         add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
@@ -115,7 +83,15 @@ class PicLib(App):
 
         return button_bar
 
+    def load_images_from_folder(self, folder_path):
+        images = []
+        for filename in os.listdir(folder_path):
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                images.append(os.path.join(folder_path, filename))
+        return images
+
 PicLib().run()
+
 
 """Temos o layout das 3 caixas necessárias +1 classe para colocar cor na label,
 os botões das tags estão definidos no entanto
