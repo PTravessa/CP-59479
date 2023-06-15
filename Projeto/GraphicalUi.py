@@ -1,4 +1,4 @@
-from PicLib_Phase1 import *
+from PicLib_Phase1 import * #Must change the path for os.listdir
 import os
 from kivy.app import App
 from kivy.uix.label import Label
@@ -49,6 +49,9 @@ class SelectableImage(ToggleButton, ButtonBehavior):
     def on_state(self, instance, value):
         if value == 'down':
             print(f'Selected image: {self.image_source}')
+
+
+
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -110,6 +113,8 @@ class PicLib(App):
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
 
+
+
     def create_button_bar(self):
         button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
@@ -155,6 +160,8 @@ class PicLib(App):
 
             self.image_display.add_widget(row_layout)
         self.page_label.text = f'Page {self.page_number}'
+
+
 
     def on_image_selected(self, image_source):
         # Perform actions when an image is selected
