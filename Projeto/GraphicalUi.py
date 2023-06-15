@@ -1,3 +1,4 @@
+from PicLib_Phase1 import *
 import os
 from kivy.app import App
 from kivy.uix.label import Label
@@ -5,6 +6,9 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import AsyncImage
 from kivy.graphics import Rectangle, Color
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.image import Image
 
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
@@ -21,6 +25,30 @@ class BrownBoxLayout(BoxLayout):
         self.rect.pos = instance.pos
         self.rect.size = instance.size
 
+class SelectableImage(ToggleButton, ButtonBehavior):
+    def __init__(self, image_source, **kwargs):
+        super().__init__(**kwargs)
+        self.background_normal = ''  # Remove default background
+        self.background_down = ''  # Remove default background when pressed
+        self.allow_no_selection = False
+        self.group = 'images'
+        self.image_source = image_source
+
+        self.bind(size=self._update_image_size)
+        self.bind(pos=self._update_image_pos)
+
+        self.image = Image(source=self.image_source)
+        self.add_widget(self.image)
+
+    def _update_image_size(self, *args):
+        self.image.size = self.size
+
+    def _update_image_pos(self, *args):
+        self.image.pos = self.pos
+
+    def on_state(self, instance, value):
+        if value == 'down':
+            print(f'Selected image: {self.image_source}')
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -82,7 +110,6 @@ class PicLib(App):
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
 
-
     def create_button_bar(self):
         button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
@@ -123,11 +150,15 @@ class PicLib(App):
 
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
-                image = AsyncImage(source=image_path)
+                image = SelectableImage(image_source=image_path)
                 row_layout.add_widget(image)
 
             self.image_display.add_widget(row_layout)
         self.page_label.text = f'Page {self.page_number}'
+
+    def on_image_selected(self, image_source):
+        # Perform actions when an image is selected
+        print(f"Selected image: {image_source}")  
 
     def go_to_previous_page(self, instance): #Must be instance so that kivy understands, it cannot be **kwargs
         if self.page_number > 1:
