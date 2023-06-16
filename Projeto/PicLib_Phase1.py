@@ -21,7 +21,7 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/"):
+    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -78,8 +78,8 @@ class CPCollection(Serializable):
 
 
 class ImageCollection(CPCollection):
-    def __init__(self, filename, items):
-        super().__init__(filename, items)
+    def __init__(self, filename, items, dirPath):
+        super().__init__(filename, items, dirPath)
 
     @staticmethod #Have to add the decorator, bc it doesnt keep super class decorator
     def elementFromJson(json):
@@ -174,12 +174,15 @@ class CPImage(Serializable):
 
     @staticmethod
     def makeCPImage(filename, dir_path):
+        if not os.path.exists(dir_path+"/"+filename):
+            print("The image has to exist in the specified folder")
+            return 
         cpImage = CPImage(filename, dir_path)
         date = cpImage.getDate()
         date = date.split(":")
         year = date[0]
         #List of the names of sub folders of album 
-        folder_path= 'C:/Users/andre/CP/collectionsRootFolder/'
+        folder_path= dir_path
         directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
         fileNames = [x.split("/")[-1] for x in directoryPaths] 
         newPath = folder_path+"/"+year
@@ -430,25 +433,24 @@ TAGS[TAG_ID] = "Tags"
 # Look up the tag ID for the "SomethingNew" tag
 new_tag_id = TAGS.get("Tags")
 
-path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
+# path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
 import os
 # assign directory
  
 # iterate over files in
 # that directory
 fl = []
-for filename in os.listdir(path):
-    f = os.path.join(path, filename)
+fotoDir = "C:/Users/andre/CP/fotos/AnaLibano"
+for filename in os.listdir(fotoDir):
+    f = os.path.join(fotoDir, filename)
     # checking if it is a file
     if os.path.isfile(f):
         # print(filename)
         fl.append(filename)
 
-fotoDir = "C:/Users/andre/CP/fotos/AnaLibano"
-path = fotoDir
-image1 = CPImage(fl[16], path)
+image1 = CPImage(fl[16], fotoDir)
 image1.addTag("TestTag1")
-img2 = CPImage(fl[2], path)
+img2 = CPImage(fl[2], fotoDir)
 img2.addTag("TestTag5")
 
 print("\n "+str(image1.__dict__))
@@ -467,11 +469,10 @@ print("\n\n IMG1.__dict__ "+str(image1.__dict__))
 print("\n\n IMG2.__dict__ "+str(img2.__dict__))
 
 #ImageCollection Testing
-# imgCol = ImageCollection("imageCollection1.txt", [image1])
-# imgCol.registerItem(img2)
-# imgCol.registerItem(image1)
-
-# imgCol.saveCollection()
+imgCol = ImageCollection("imageCollection1.txt", [image1], "C:/Users/andre/CP/ImageCollections/")
+imgCol.registerItem(img2)
+imgCol.registerItem(image1)
+imgCol.saveCollection()
 
 # cpImgs1 =imgCol.findWithTag("TestTag1")
 # for cpImg in cpImgs1:
@@ -480,12 +481,13 @@ print("\n\n IMG2.__dict__ "+str(img2.__dict__))
 # imgCol.loadCollection()
 
 # print("\n\n exif tags img1 = "+str(image1.getExifTags()))
-# image1.copyToFolder()
+collectionDir = "C:/Users/andre/CP/collectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+image1.copyToFolder(collectionDir)
 # print("\n\n image1.etags[\"DateTime\"] = " + str(image1.etags["DateTime"]))
 # print("\n\n img tags img1 = "+str(image1.getTags()))
 
 
-# print("fl[4] = " + str(fl[4]) + " path = " + str(path))
-# imageTest = CPImage.makeCPImage(fl[4], path)
-# print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
-# print("fl[4]" + str(fl[4]) + "path" + str(path))
+print("fl[4] = " + str(fl[4]) + " path = " + str(collectionDir))
+imageTest = CPImage.makeCPImage(fl[4], collectionDir)
+print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
+print("fl[4]" + str(fl[4]) + "path" + str(collectionDir))
