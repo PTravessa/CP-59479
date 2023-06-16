@@ -1,5 +1,4 @@
 from PicLib_Phase1 import * #Must change the path for os.listdir
-import os
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.button import Button
@@ -9,6 +8,8 @@ from kivy.graphics import Rectangle, Color
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.image import Image
+from kivy.uix.popup import Popup
+from kivy.uix.textinput import TextInput
 
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
@@ -25,32 +26,43 @@ class BrownBoxLayout(BoxLayout):
         self.rect.pos = instance.pos
         self.rect.size = instance.size
 
+from kivy.graphics import Rectangle, Color
+from kivy.uix.image import AsyncImage
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.image import Image
+
 class SelectableImage(ToggleButton, ButtonBehavior):
     def __init__(self, image_source, **kwargs):
         super().__init__(**kwargs)
         self.background_normal = ''  # Remove default background
-        self.background_down = ''  # Remove default background when pressed
+        """self.background_down = ''  # Remove default background when pressed"""
         self.allow_no_selection = False
         self.group = 'images'
         self.image_source = image_source
 
-        self.bind(size=self._update_image_size)
-        self.bind(pos=self._update_image_pos)
-
         self.image = Image(source=self.image_source)
         self.add_widget(self.image)
 
+        with self.canvas.before:
+            self.frame_color = Color(1, 1, 1, 1)  # White color
+            self.frame = Rectangle(size=self.size, pos=self.pos)
+
+        self.bind(size=self._update_image_size, pos=self._update_image_pos)
+
     def _update_image_size(self, *args):
         self.image.size = self.size
+        self.frame.size = self.size
 
     def _update_image_pos(self, *args):
         self.image.pos = self.pos
+        self.frame.pos = self.pos
 
     def on_state(self, instance, value):
         if value == 'down':
-            print(f'Selected image: {self.image_source}')
-
-
+            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when pressed
+        else:
+            self.frame_color.rgba = (1, 1, 1, 1)  # White color when released
 
 
 class PicLib(App):
@@ -113,24 +125,25 @@ class PicLib(App):
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
 
-
-
     def create_button_bar(self):
-        button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
+        self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
         add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
+        add_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
 
-        button_bar.add_widget(add_tags_button)
-        button_bar.add_widget(remove_tags_button)
-        button_bar.add_widget(search_button)
-        button_bar.add_widget(zip_button)
-        button_bar.add_widget(rotate_button)
+        self.original_button_bar = self.button_bar  # Store the original button bar
 
-        return button_bar
+        self.button_bar.add_widget(add_tags_button)
+        self.button_bar.add_widget(remove_tags_button)
+        self.button_bar.add_widget(search_button)
+        self.button_bar.add_widget(zip_button)
+        self.button_bar.add_widget(rotate_button)
+
+        return self.button_bar
 
     def load_images_from_folder(self, folder_path):
         images = []
@@ -156,29 +169,88 @@ class PicLib(App):
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
                 image = SelectableImage(image_source=image_path)
+                image.bind(on_release=self.on_image_selected)
                 row_layout.add_widget(image)
 
             self.image_display.add_widget(row_layout)
         self.page_label.text = f'Page {self.page_number}'
 
-
-
-    def on_image_selected(self, image_source):
+    def on_image_selected(self, instance):
         # Perform actions when an image is selected
-        print(f"Selected image: {image_source}")  
+        print(f"Selected image: {instance.image_source}")
 
-    def go_to_previous_page(self, instance): #Must be instance so that kivy understands, it cannot be **kwargs
+    def go_to_previous_page(self, instance):
         if self.page_number > 1:
             self.page_number -= 1
             self.update_image_display()
 
-    def go_to_next_page(self, instance): #Must be instance so that kivy understands, it cannot be **kwargs
+    def go_to_next_page(self, instance):
         if self.page_number < self.total_pages:
             self.page_number += 1
             self.update_image_display()
 
+    def on_add_tags_button(self, instance):
+        # Remove the existing buttons from the button bar
+        self.button_bar.clear_widgets()
+
+        # Create the new buttons
+        save_button = Button(text='Ok', font_size=20, background_color='#94FFDA')
+        cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
+
+        # Bind the new button actions
+        save_button.bind(on_press=self.on_save_tags_button)
+        cancel_button.bind(on_press=self.on_cancel_tags_button)
+
+        # Add the new buttons to the button bar
+        self.button_bar.add_widget(save_button)
+        self.button_bar.add_widget(cancel_button)
+
+    def on_save_tags_button(self, instance):
+        # Perform actions when the "Save" button is pressed
+        print("Save Tag button pressed")
+
+        # Create a popup with a text input for adding tags
+        popup_content = BoxLayout(orientation='vertical', padding=10)
+        tag_input = TextInput(multiline=False, hint_text='Enter tags')
+        add_button = Button(text='Add')
+
+        popup_content.add_widget(tag_input)
+        popup_content.add_widget(add_button)
+
+        popup = Popup(title='Add Tags', content=popup_content, size_hint=(0.4, 0.4))
+        add_button.bind(on_press=lambda *args: self.add_tags(tag_input.text, popup))
+        popup.open()
+
+        # Remove the existing buttons from the button bar
+        self.button_bar.clear_widgets()
+
+        # Create the new buttons
+        save_button = Button(text='Ok', font_size=20, background_color='#94FFDA')
+        cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
+
+        # Bind the new button actions
+        save_button.bind(on_press=self.on_save_tags_button)
+        cancel_button.bind(on_press=self.on_cancel_tags_button)
+
+        # Add the new buttons to the button bar
+        self.button_bar.add_widget(save_button)
+        self.button_bar.add_widget(cancel_button)
+
+    def on_cancel_tags_button(self, instance):
+        # Perform actions when the "Cancel" button is pressed
+        print("Cancel button pressed")
+
+        # Restore the original button bar
+        self.button_bar.clear_widgets()
+        self.button_bar.add_widget(self.original_button_bar)
+
+    def add_tags(self, tags, popup):
+        # Perform actions to add tags to selected images
+        print(f"Tags: {tags}")
+        popup.dismiss()
 
 PicLib().run()
+
 
 """Temos o layout das 3 caixas necessárias +1 classe para colocar cor na label,
 os botões das tags estão definidos no entanto
@@ -191,6 +263,12 @@ sem ocupar diferentes tamanhos no main ficava mais clean
 no entanto não se dá para fazer como estou a pensar,
 aos botões vou lhes meter colors type HEX ou RGB, é mais universal
  i mean não é preciso fazer a divisão por 255 no entanto é irrelevante"""
-
+"""+T está a criar o popup para inserir o text input da nova tag a criar e 
+leva nos a um novo layout, ainda estou a tentar perceber como integrar os diferentes layouts
+ visto que não estou a conseguir colocar widgets parentais e assim tenho mesmo de criar diferetnes layouts A,B,C,D
+ a seleção de imagem continua a ser só possivel selecioanr 1,no entanto ainda não integrei o nosso PicLib 
+ nem as collections que temos como output estou a utilizar apenas as imagens todas numa pasta porque
+ queria testar a navegação entre paginas. Pata tal na utilização para adicionar as tags o novo layout funciona 
+ até ao botão ok que aciona o popup para dar add à Tag mas o de voltar da crash a app"""
 """Outra coisa, deves ter de instalar o sdl12 do kivy,
 (pip install "kivy[sdl2]") no terminal """
