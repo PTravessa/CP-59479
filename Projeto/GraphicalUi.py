@@ -52,6 +52,9 @@ class SelectableImage(CheckBox, ButtonBehavior):
             self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
             if self not in self.selected_images:
                 self.selected_images.append(self)  # Add self to selected_images list
+            else:
+                self.selected_images.remove(self)
+                self.frame_color.rgba = (1, 1, 1, 1)    
 
         """else: #removes the before selected image
             self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
@@ -140,7 +143,8 @@ class PicLib(App):
         self.image_display = image_display
 
         # Load and display images from folder
-        image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
         self.images = self.load_images_from_folder(image_folder)
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
