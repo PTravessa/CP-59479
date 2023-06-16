@@ -5,7 +5,7 @@ from PicLib_Phase1 import CPImage, ImageCollection, CPCollection, Tag
 
 # iterate over files in
 # that directory
-path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+path = "C:/Users/andre/CP/fotos"
 fl = []
 for filename in os.listdir(path):
     f = os.path.join(path, filename)
@@ -18,7 +18,7 @@ cpi1 = CPImage(fl[0], path)
 
 class TestImageCollection(unittest.TestCase):
     def testElementFromJson(self):
-        jsonPath = "C:/Users/Andreas/Desktop/CP/imageCollection1.txt"
+        jsonPath = "C:/Users/Andreas/CP/imageCollection1.txt"
         with open(jsonPath) as f:
             s = f.readlines()
 

@@ -21,8 +21,9 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items):
+    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/"):
         self.filename = filename
+        self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
             self.items = set(items) #A set of all CPImage filenames im guessing
         else:
@@ -45,7 +46,7 @@ class CPCollection(Serializable):
         d = {"filename": self.filename, "items": l}
         print("The dict list is "+str(d))
         s = json.dumps(d)
-        with open("C:/Users/Andreas/Desktop/CP"+"/"+str(self.filename), "w") as outfile:
+        with open(self.dirPath+"/"+str(self.filename), "w") as outfile:
             outfile.write(s)
 
     def size(self):
@@ -65,7 +66,7 @@ class CPCollection(Serializable):
     
     def loadCollection(self):
         #with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
-        with open('C:/Users/Andreas/Desktop/CP/'+ self.filename, "r") as openfile:
+        with open(self.dirPath+ self.filename, "r") as openfile:
             json_object = json.load(openfile)
 
         print(json_object, type(json_object))
@@ -125,16 +126,16 @@ class ImageCollection(CPCollection):
         return [item for item in images if item[-4:] == ".jpg"]
     
 class CPImage(Serializable):
-    def __init__(self, imageFile, dirPath = 'C://Users//Andreas//Desktop//CP//fotos//AnaLibano'):
+    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'):
         """
         CPImage class.
         Args: Filename of the image file.
         """
         self.imageFile = imageFile
         #self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
-        self.path = dirPath
-        print(self.path)
-        image = Image.open(self.path + "//" + self.imageFile)
+        self.dirPath = dirPath
+        print(self.dirPath)
+        image = Image.open(self.dirPath + "/" + self.imageFile)
         if image.getexif() is not None:
             self.exif = image.getexif()
             self.etags = self.getExifTags()
@@ -178,7 +179,7 @@ class CPImage(Serializable):
         date = date.split(":")
         year = date[0]
         #List of the names of sub folders of album 
-        folder_path= 'C:/Users/Andreas/Desktop/CP/collectionsRootFolder'
+        folder_path= 'C:/Users/andre/CP/collectionsRootFolder/'
         directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
         fileNames = [x.split("/")[-1] for x in directoryPaths] 
         newPath = folder_path+"/"+year
@@ -192,7 +193,7 @@ class CPImage(Serializable):
             print("Image file already in folder")        
         return CPImage(cpImage.imageFile)
 
-    def copyToFolder(self, folder_path='C:/Users/Andreas/Desktop/CP/collectionsRootFolder'):
+    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'):
         """
         Copies the image to the folder.
         """
@@ -209,7 +210,7 @@ class CPImage(Serializable):
         if year not in fileNames: #If there is no year album, create one
             os.mkdir(newPath)
         if not os.path.isfile(newPath+"/"+self.imageFile): 
-            shutil.copy(self.path+"/"+self.imageFile, newPath+"/"+self.imageFile)
+            shutil.copy(self.dirPath+"/"+self.imageFile, newPath+"/"+self.imageFile)
         else:
             print("Image file already in folder")
         
@@ -233,19 +234,19 @@ class CPImage(Serializable):
             etagId.append(etag_id)
 
         if "DateTimeOriginal" in etag:
-            image = Image.open(self.path+"//"+self.imageFile)
+            image = Image.open(self.dirPath+"/collectionsRootFolder/"+self.imageFile)
             i = etag.index("DateTimeOriginal")
 
             self.exif[etagId[i]] = date
             # print("On datetimeog")
-            image.save(self.path+"//"+self.imageFile, exif = self.exif)
+            image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
             image.close()
         elif "DateTime" in etag:
-            image = Image.open(self.path+"//"+self.imageFile)
+            image = Image.open(self.dirPath+"/"+self.imageFile)
             i = etag.index("DateTime")
             self.exif[etagId[i]] = date
             # print("On datetime")
-            image.save(self.path+"//"+self.imageFile, exif = self.exif)
+            image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
             image.close()
     
     def getImageFile(self):
@@ -260,7 +261,7 @@ class CPImage(Serializable):
         Gets the dimensions of the image.
         Returns: Tuple containing the width and height of the image.
         """
-        image_path = self.path + '/' + self.imageFile
+        image_path = self.dirPath + '/' + self.imageFile
         with Image.open(image_path) as img:
             width, height = img.size
         return (width, height)
@@ -301,7 +302,7 @@ class CPImage(Serializable):
             etagId.append(etag_id)
 
         # Open the image file
-        img = Image.open(self.path+"/"+self.imageFile)
+        img = Image.open(self.dirPath+"/"+self.imageFile)
         
         TAG_ID = 4660
         TAGS[TAG_ID] = "Tags"
@@ -309,7 +310,7 @@ class CPImage(Serializable):
         if "Tags" not in etag:
             tempD = {TAG_ID: tag}
             self.exif[TAG_ID] = json.dumps(tempD[TAG_ID], ensure_ascii=False)
-            img.save(self.path+"//"+self.imageFile, exif = self.exif)
+            img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
             img.close()
         if "Tags" in etag:
             if not self.hasTag(tag):
@@ -324,7 +325,7 @@ class CPImage(Serializable):
                 # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
                 self.exif[TAG_ID] = s
                 # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
-                img.save(self.path+"//"+self.imageFile, exif = self.exif)
+                img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
                 img.close()
 
     def removeTag(self, tag): 
@@ -338,7 +339,7 @@ class CPImage(Serializable):
             etagId.append(etag_id)
 
         # Open the image file
-        img = Image.open(self.path+"/"+self.imageFile)
+        img = Image.open(self.dirPath+"/"+self.imageFile)
         
         TAG_ID = 4660
         TAGS[TAG_ID] = "Tags"
@@ -361,7 +362,7 @@ class CPImage(Serializable):
                 # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
                 self.exif[TAG_ID] = s
                 # # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
-                img.save(self.path+"//"+self.imageFile, exif = self.exif)
+                img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
                 img.close()
             else:
                 print("Tag is not in image Tags")
@@ -429,7 +430,7 @@ TAGS[TAG_ID] = "Tags"
 # Look up the tag ID for the "SomethingNew" tag
 new_tag_id = TAGS.get("Tags")
 
-path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano" # Path Andreas
+path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
 import os
 # assign directory
  
@@ -443,6 +444,8 @@ for filename in os.listdir(path):
         # print(filename)
         fl.append(filename)
 
+fotoDir = "C:/Users/andre/CP/fotos/AnaLibano"
+path = fotoDir
 image1 = CPImage(fl[16], path)
 image1.addTag("TestTag1")
 img2 = CPImage(fl[2], path)
