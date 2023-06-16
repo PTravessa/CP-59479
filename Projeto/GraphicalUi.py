@@ -3,13 +3,13 @@ from kivy.app import App
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.image import AsyncImage
+from kivy.uix.image import AsyncImage ,Image
 from kivy.graphics import Rectangle, Color
 from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.image import Image
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
+from kivy.uix.checkbox import CheckBox
+from kivy.uix.togglebutton import ToggleButton
 
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
@@ -26,18 +26,13 @@ class BrownBoxLayout(BoxLayout):
         self.rect.pos = instance.pos
         self.rect.size = instance.size
 
-from kivy.graphics import Rectangle, Color
-from kivy.uix.image import AsyncImage
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.image import Image
+#Imagens
+class SelectableImage(CheckBox, ButtonBehavior):
+    selected_images = []
 
-class SelectableImage(ToggleButton, ButtonBehavior):
     def __init__(self, image_source, **kwargs):
         super().__init__(**kwargs)
         self.background_normal = ''  # Remove default background
-        """self.background_down = ''  # Remove default background when pressed"""
-        self.allow_no_selection = False
         self.group = 'images'
         self.image_source = image_source
 
@@ -49,6 +44,7 @@ class SelectableImage(ToggleButton, ButtonBehavior):
             self.frame = Rectangle(size=self.size, pos=self.pos)
 
         self.bind(size=self._update_image_size, pos=self._update_image_pos)
+        self.bind(active=self.on_active)
 
     def _update_image_size(self, *args):
         self.image.size = self.size
@@ -58,11 +54,19 @@ class SelectableImage(ToggleButton, ButtonBehavior):
         self.image.pos = self.pos
         self.frame.pos = self.pos
 
-    def on_state(self, instance, value):
-        if value == 'down':
-            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when pressed
+    def on_active(self, instance, value):
+        if value:
+            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
+            if self not in self.selected_images:
+                self.selected_images.append(self)  # Add self to selected_images list
         else:
-            self.frame_color.rgba = (1, 1, 1, 1)  # White color when released
+            self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
+            if self in self.selected_images:
+                self.selected_images.remove(self)  # Remove self from selected_images list
+
+        # Call the update_selected_images_label method from PicLib
+        app = App.get_running_app()
+        app.update_selected_images_label()
 
 
 class PicLib(App):
@@ -98,16 +102,26 @@ class PicLib(App):
         bottom_row_label = Label(text='Main Page', font_size=30)
         self.bottom_row.add_widget(bottom_row_label)
 
-        prev_button = Button(text='<', font_size=20, size_hint=(0.1, 0.99))
-        next_button = Button(text='>', font_size=20, size_hint=(0.1, 0.99))
+        prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
         next_button.bind(on_press=self.go_to_next_page)
         self.bottom_row.add_widget(prev_button)
 
-        self.page_label = Label(text='Page 1', font_size=20, size_hint=(0.1, 0.99))
+        self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
         self.bottom_row.add_widget(self.page_label)
 
+        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.1, 0.99))
+        self.bottom_row.add_widget(self.selected_images_label)
+
         self.bottom_row.add_widget(next_button)
+
+        return self.bottom_row
+
+    def update_selected_images_label(self):
+        num_selected_images = len(set(SelectableImage.selected_images))
+        self.selected_images_label.text = f'Selected: {num_selected_images}'
+
 
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
