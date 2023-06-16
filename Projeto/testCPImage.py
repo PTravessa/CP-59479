@@ -1,11 +1,11 @@
 import unittest
 import os
 import json
-from ProjetoPicLib1 import CPImage, ImageCollection, CPCollection, Tag
+from PicLib_Phase1 import CPImage, ImageCollection, CPCollection, Tag
 
 # iterate over files in
 # that directory
-path = "C://Users//Andreas//Desktop//CP//fotos//AnaLibano"
+path = "C:/Users/andre/CP/fotos/AnaLibano"
 fl = []
 for filename in os.listdir(path):
     f = os.path.join(path, filename)
@@ -24,7 +24,7 @@ class TestCPImageMethods(unittest.TestCase):
 
     def testGetImageFile(self):
         nameOfFile = "monumento.jpg"
-        cpi2 = CPImage("monumento.jpg", "C:/Users/Andreas/Desktop/CP/fotos/AracyBettencourt")
+        cpi2 = CPImage("monumento.jpg", "C:/Users/andre/CP/fotos/AracyBettencourt")
         self.assertEqual(nameOfFile, cpi2.getImageFile())
 
     def testAddTag(self):
