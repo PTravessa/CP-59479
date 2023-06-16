@@ -1,7 +1,7 @@
 import unittest
 import os
 import json
-from ProjetoPicLib1 import CPImage, ImageCollection, CPCollection, Tag
+from PicLib_Phase1 import CPImage, ImageCollection, CPCollection, Tag
 
 # iterate over files in
 # that directory
