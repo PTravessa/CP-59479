@@ -46,6 +46,27 @@ class SelectableImage(CheckBox, ButtonBehavior):
         self.bind(size=self._update_image_size, pos=self._update_image_pos)
         self.bind(active=self.on_active)
 
+
+    def on_active(self, instance, value):
+        if value:
+            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
+            if self not in self.selected_images:
+                self.selected_images.append(self)  # Add self to selected_images list
+
+        """else: #removes the before selected image
+            self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
+            if self in self.selected_images:
+                self.selected_images.remove(self) """ # Remove self from selected_images list
+        
+        """else: #stores only one time the same file
+            self.frame_color.rgba = (1, 1, 1, 1)  
+            if self not in self.selected_images:
+                self.selected_images.remove(self) """
+
+        # Call the update_selected_images_label method from PicLib
+        app = App.get_running_app()
+        app.update_selected_images_label()
+    
     def _update_image_size(self, *args):
         self.image.size = self.size
         self.frame.size = self.size
@@ -53,20 +74,6 @@ class SelectableImage(CheckBox, ButtonBehavior):
     def _update_image_pos(self, *args):
         self.image.pos = self.pos
         self.frame.pos = self.pos
-
-    def on_active(self, instance, value):
-        if value:
-            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
-            if self not in self.selected_images:
-                self.selected_images.append(self)  # Add self to selected_images list
-        else:
-            self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
-            if self in self.selected_images:
-                self.selected_images.remove(self)  # Remove self from selected_images list
-
-        # Call the update_selected_images_label method from PicLib
-        app = App.get_running_app()
-        app.update_selected_images_label()
 
 
 class PicLib(App):
@@ -99,7 +106,7 @@ class PicLib(App):
 
     def create_bottom_row(self):
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        bottom_row_label = Label(text='Main Page', font_size=30)
+        bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25)
         self.bottom_row.add_widget(bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
@@ -110,8 +117,7 @@ class PicLib(App):
 
         self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
         self.bottom_row.add_widget(self.page_label)
-
-        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.1, 0.99))
+        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.13, 1))
         self.bottom_row.add_widget(self.selected_images_label)
 
         self.bottom_row.add_widget(next_button)
@@ -119,7 +125,7 @@ class PicLib(App):
         return self.bottom_row
 
     def update_selected_images_label(self):
-        num_selected_images = len(set(SelectableImage.selected_images))
+        num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
 
 
@@ -142,8 +148,9 @@ class PicLib(App):
     def create_button_bar(self):
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
-        add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
-        add_tags_button.bind(on_press=self.on_add_tags_button)
+        collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
+        # C3 add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
+        # add_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
@@ -151,11 +158,12 @@ class PicLib(App):
 
         self.original_button_bar = self.button_bar  # Store the original button bar
 
-        self.button_bar.add_widget(add_tags_button)
-        self.button_bar.add_widget(remove_tags_button)
+        self.button_bar.add_widget(collection_tags_button)
+        #self.button_bar.add_widget(add_tags_button)
         self.button_bar.add_widget(search_button)
-        self.button_bar.add_widget(zip_button)
-        self.button_bar.add_widget(rotate_button)
+        #self.button_bar.add_widget(remove_tags_button)
+        #self.button_bar.add_widget(zip_button)
+        #self.button_bar.add_widget(rotate_button)
 
         return self.button_bar
 
