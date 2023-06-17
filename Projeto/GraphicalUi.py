@@ -11,6 +11,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
 
+import math
+
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
     def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
@@ -28,13 +30,14 @@ class BrownBoxLayout(BoxLayout):
 
 #Imagens
 class SelectableImage(CheckBox, ButtonBehavior):
-    selected_images = []
+    selected_images = dict()
 
-    def __init__(self, image_source, **kwargs):
+    def __init__(self, image_source, id, **kwargs):
         super().__init__(**kwargs)
         self.background_normal = ''  # Remove default background
         self.group = 'images'
         self.image_source = image_source
+        self.id = id
 
         self.image = Image(source=self.image_source)
         self.add_widget(self.image)
@@ -46,15 +49,25 @@ class SelectableImage(CheckBox, ButtonBehavior):
         self.bind(size=self._update_image_size, pos=self._update_image_pos)
         self.bind(active=self.on_active)
 
+        if self.id in self.selected_images:
+            self.frame_color.rgba = (1, 0, 0, 1)        
+
 
     def on_active(self, instance, value):
         if value:
             self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
-            if self not in self.selected_images:
-                self.selected_images.append(self)  # Add self to selected_images list
+            if self.id not in self.selected_images:
+                self.selected_images[self.id]=self  # Add self to selected_images list
             else:
-                self.selected_images.remove(self)
-                self.frame_color.rgba = (1, 1, 1, 1)    
+                self.selected_images.pop(self.id)
+                self.frame_color.rgba = (1, 1, 1, 1)
+        else:
+            if self.id not in self.selected_images:
+                self.frame_color.rgba = (1, 1, 1, 1)
+            else:
+                self.frame_color.rgba = (1, 0, 0, 1)
+            
+        print(self.selected_images)
 
         """else: #removes the before selected image
             self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
@@ -88,7 +101,7 @@ class PicLib(App):
         self.image_display = None
         self.page_number = 1
         self.total_pages = 1
-        self.images_per_page = 25
+        self.images_per_page = 6
         self.page_label = None
         self.addedTags = []
         self.activeTags = []
@@ -267,12 +280,14 @@ class PicLib(App):
         if len(images_to_display) % 5 != 0:
             rows += 1
 
+        image_index = start_index
         for i in range(rows):
             row_images = images_to_display[i * 5:(i + 1) * 5]
 
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
-                image = SelectableImage(image_source=image_path)
+                image_index += 1
+                image = SelectableImage(image_source=image_path, id=image_index)
                 image.bind(on_release=self.on_image_selected)
                 row_layout.add_widget(image)
 
