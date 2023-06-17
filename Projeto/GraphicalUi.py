@@ -89,6 +89,7 @@ class PicLib(App):
         self.total_pages = 1
         self.images_per_page = 25
         self.page_label = None
+        self.activeTags = []
 
     def build(self):
         self.create_top_row()
@@ -157,6 +158,7 @@ class PicLib(App):
         collection_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
+        search_button.bind(on_press=self.load_imgs_w_tags)
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
 
@@ -173,6 +175,27 @@ class PicLib(App):
         #self.button_bar.add_widget(rotate_button)
 
         return self.button_bar
+    
+    def load_imgs_w_tags(self, instance):
+        self.main_panel.clear_widgets()
+        self.button_bar.clear_widgets()
+
+        okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
+        self.button_bar.add_widget(okButton)
+
+        tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
+        self.main_panel.add_widget(self.button_bar)
+        self.main_panel.add_widget(tag_display)
+
+        self.main_panel.spacing = 10
+        for tagName in self.activeTags:
+            b = Button(text=tagName, font_size=20, background_color="#94FFDA", size_hint=(0.1, 0.1))
+            tag_display.add_widget(b)
+
+    def search_button(self):
+        search_button = Button(text='S', font_size=20, background_color='#94FFDA')
+        search_button.bind(on_press=self.load_imgs_w_tags)
+        return search_button
 
     def load_images_from_folder(self, folder_path):
         images = []
@@ -223,7 +246,7 @@ class PicLib(App):
         self.button_bar.clear_widgets()
 
         # Create the new buttons
-        save_button = Button(text='Ok', font_size=20, background_color='#94FFDA')
+        save_button = Button(text='T+', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
         # Bind the new button actions
@@ -254,7 +277,7 @@ class PicLib(App):
         self.button_bar.clear_widgets()
 
         # Create the new buttons
-        save_button = Button(text='Ok', font_size=20, background_color='#94FFDA')
+        save_button = Button(text='T+', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
         # Bind the new button actions
@@ -274,7 +297,7 @@ class PicLib(App):
         collection_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
 
-        search_button = Button(text='S', font_size=20, background_color='#94FFDA')
+        search_button = self.search_button()
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
         self.button_bar.clear_widgets()
@@ -287,7 +310,9 @@ class PicLib(App):
 
     def add_tags(self, tags, popup):
         # Perform actions to add tags to selected images
+        self.activeTags.append(tags)
         print(f"Tags: {tags}")
+        print(self.activeTags)
         popup.dismiss()
 
 PicLib().run()
