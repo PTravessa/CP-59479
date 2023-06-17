@@ -85,11 +85,15 @@ class PicLib(App):
         self.top_row = None  # BoxLayout
         self.bottom_row = None  # BoxLayout
         self.main_panel = None  # BoxLayout
+        self.image_display = None
         self.page_number = 1
         self.total_pages = 1
         self.images_per_page = 25
         self.page_label = None
+        self.addedTags = []
         self.activeTags = []
+
+        self.currentImgFolder = None
 
     def build(self):
         self.create_top_row()
@@ -145,8 +149,8 @@ class PicLib(App):
 
         # Load and display images from folder
         # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-        image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
-        self.images = self.load_images_from_folder(image_folder)
+        self.image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
+        self.images = self.load_images_from_folder(self.image_folder)
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
 
@@ -158,7 +162,7 @@ class PicLib(App):
         collection_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
-        search_button.bind(on_press=self.load_imgs_w_tags)
+        search_button.bind(on_press=self.load_tags)
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
 
@@ -176,11 +180,12 @@ class PicLib(App):
 
         return self.button_bar
     
-    def load_imgs_w_tags(self, instance):
+    def load_tags(self, instance):
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
 
         okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
+        okButton.bind(on_press=self.load_scene_w_tags)
         self.button_bar.add_widget(okButton)
 
         tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
@@ -188,21 +193,68 @@ class PicLib(App):
         self.main_panel.add_widget(tag_display)
 
         self.main_panel.spacing = 10
-        for tagName in self.activeTags:
+        for tagName in self.addedTags:
             b = Button(text=tagName, font_size=20, background_color="#94FFDA", size_hint=(0.1, 0.1))
+            b.bind(on_press=lambda _, tag=tagName: self.add_active_tag(tag))
             tag_display.add_widget(b)
+
+    def add_active_tag(self, tag):
+        if tag not in self.activeTags:
+            self.activeTags.append(tag)
+
+    def load_scene_w_tags(self, instance):
+        self.main_panel.clear_widgets()
+        self.button_bar.clear_widgets()
+        self.button_bar = self.create_button_bar()
+        self.main_panel.add_widget(self.button_bar)
+
+        tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
+        # self.main_panel.add_widget(self.button_bar)
+        self.main_panel.add_widget(self.image_display)
+
+
+        image_names = self.get_image_names()
+        imagesWithTags = set()
+        for image in image_names:
+            cpimage = CPImage(image, self.image_folder)
+            for tag in self.addedTags:
+                if cpimage.hasTag(tag):
+                    imagesWithTags.add(self.image_folder+"/"+image)
+                    break
+        self.images = list(imagesWithTags)
+        print("Self.images= "+str(self.images))
+        
+        self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+        self.update_image_display()
+        # self.main_panel.add_widget(self.image_display)
+        self.bottom_row.clear_widgets()
+        self.bottom_row.add_widget(Button(text="Tags: "+str()))
+
+    def create_empty_main_panel(self, instance):
+        self.main_panel.clear_widgets()
+        self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
+        button_bar = self.create_button_bar()
+        self.image_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
+
+        self.main_panel.add_widget(button_bar)
+        self.main_panel.add_widget(self.image_display)
+        return self.main_panel
+
 
     def search_button(self):
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
-        search_button.bind(on_press=self.load_imgs_w_tags)
+        search_button.bind(on_press=self.load_tags)
         return search_button
 
-    def load_images_from_folder(self, folder_path):
+    def load_images_from_folder(self, folder_path): #Full path of image file
         images = []
         for filename in os.listdir(folder_path):
             if filename.endswith('.png') or filename.endswith('.jpg'):
                 images.append(os.path.join(folder_path, filename))
         return images
+    
+    def get_image_names(self): #Name of image file
+        return os.listdir(self.image_folder)
 
     def update_image_display(self):
         self.image_display.clear_widgets()
@@ -310,9 +362,9 @@ class PicLib(App):
 
     def add_tags(self, tags, popup):
         # Perform actions to add tags to selected images
-        self.activeTags.append(tags)
+        self.addedTags.append(tags)
         print(f"Tags: {tags}")
-        print(self.activeTags)
+        print(self.addedTags)
         popup.dismiss()
 
 PicLib().run()
