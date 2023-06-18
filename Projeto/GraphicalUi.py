@@ -285,10 +285,16 @@ class PicLib(App):
         self.okButton.bind(on_press=self.load_scene_w_tags)
         self.button_bar.add_widget(self.okButton)
 
+        self.addTags_to_main_button = Button(text="<", font_size=20, background_color="#94FFDA")
+        self.addTags_to_main_button.bind(on_press=self.on_cancel_tags_button)
+        self.activeTags = []
+        self.button_bar.add_widget(self.addTags_to_main_button)
+
         self.tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
         self.main_panel.add_widget(self.button_bar)
         self.main_panel.add_widget(self.tag_display)
         self.bottom_row.remove_widget(self.bottom_row_label)
+
 
         self.main_panel.spacing = 10
         for tagName in self.addedTags:
