@@ -10,8 +10,11 @@ from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
+from zipfile import ZipFile
 
 import math
+
+default_folder = 'C:/Users/andre/CP/'
 
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
@@ -162,7 +165,48 @@ class PicLib(App):
     def update_selected_images_label(self):
         num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
+        if num_selected_images >= 1:
+            self.add_zip_and_rot_to_buttonBar()
 
+    def add_zip_and_rot_to_buttonBar(self):
+        zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
+        rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
+        zip_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.zip_files_popup(images))
+        rotate_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.rotate_images(images))
+        self.button_bar.add_widget(zip_button)
+        self.button_bar.add_widget(rotate_button)
+
+    def zip_files_popup(self, images):
+        # Create a popup with a text input for adding tags
+        popup_content = BoxLayout(orientation='vertical', padding=10)
+        zip_filename = TextInput(multiline=False, hint_text='Enter zip path')
+        zip_folder = TextInput(multiline=False, hint_text='Enter full folderPath (write "defaultss" for default)', text='')
+        zip_button = Button(text='Ok')
+        zip_button.bind(on_press=lambda *args: self.zip_files(images=SelectableImage.selected_images, zip_filename=zip_filename.text, zip_folder=zip_folder.text, popup=popup))
+        popup_content.add_widget(zip_filename)
+        popup_content.add_widget(zip_folder)
+        popup_content.add_widget(zip_button)
+
+        popup = Popup(title='Enter the zip path', content=popup_content, size_hint=(0.4, 0.4))
+
+        popup.open()
+
+    def zip_files(self, images, zip_filename, zip_folder, popup):
+        # # Create a ZipFile Object
+        if not zip_filename.endswith('.zip'):
+            zip_filename += '.zip'
+        if zip_folder == 'defaultss':
+            zip_folder = default_folder
+        zip_path = zip_folder+"/ZippedImageFolder/"+zip_filename 
+        if not os.path.isdir(zip_folder+"/ZippedImageFolder/"):
+            os.mkdir(zip_folder+"/ZippedImageFolder/")
+        with ZipFile(zip_path, 'w') as zip_object:
+           # Adding files that need to be zipped
+           for imageKey in images:
+               images[imageKey].image_source
+               print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
+               zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
+        popup.dismiss()
 
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
@@ -322,6 +366,7 @@ class PicLib(App):
     def on_image_selected(self, instance):
         # Perform actions when an image is selected
         print(f"Selected image: {instance.image_source}")
+        
 
     def go_to_previous_page(self, instance):
         if self.page_number > 1:
@@ -421,6 +466,8 @@ class PicLib(App):
         self.button_bar.add_widget(cancel_button)
 
     def del_tag(self, tag, popup):
+        if tag not in self.addedTags:
+            return
         self.addedTags.remove(tag)
         print(f"Tags: {tag}")
         print(self.addedTags)
