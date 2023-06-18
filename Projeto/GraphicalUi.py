@@ -11,11 +11,11 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
 from zipfile import ZipFile
-
+import random
 import math
 
-default_folder = 'C:/Users/andre/CP/'
-#default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+#default_folder = 'C:/Users/andre/CP/'
+default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
     def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
@@ -94,7 +94,7 @@ class PicLib(App):
         self.image_display = None
         self.page_number = 1
         self.total_pages = 1
-        self.images_per_page = 6
+        self.images_per_page = 25
         self.page_label = None
         self.addedTags = []
         self.activeTags = []
@@ -163,6 +163,8 @@ class PicLib(App):
         self.selected_images_label.text = f'Selected: {num_selected_images}'
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children and not self.rotate_button in self.button_bar.children:
             self.add_zip_and_rot_to_buttonBar()
+        if num_selected_images >= 2:
+            self.button_bar.remove_widget(self.rotate_button)
         elif num_selected_images <= 0:
             self.button_bar.remove_widget(self.zip_button)
             self.button_bar.remove_widget(self.rotate_button)
@@ -218,8 +220,8 @@ class PicLib(App):
         self.image_display = image_display
 
         # Load and display images from folder
-        #self.image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-        self.image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
+        self.image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        #self.image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
         self.images = self.load_images_from_folder(self.image_folder)
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
@@ -355,12 +357,16 @@ class PicLib(App):
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
                 image_index += 1
-                image = SelectableImage(image_source=image_path, id=image_index)
+
+                # Randomly select an image
+                random_image = random.choice(self.images)
+
+                image = SelectableImage(image_source=random_image, id=image_index)
                 image.bind(on_release=self.on_image_selected)
                 row_layout.add_widget(image)
 
             self.image_display.add_widget(row_layout)
-        self.page_label.text = f'Page {self.page_number}'
+            self.page_label.text = f'Page {self.page_number}'
 
     def on_image_selected(self, instance):
         # Perform actions when an image is selected
