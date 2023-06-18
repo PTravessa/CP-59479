@@ -127,8 +127,8 @@ class PicLib(App):
 
     def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25)
-        self.bottom_row.add_widget(bottom_row_label)
+        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25)
+        self.bottom_row.add_widget(self.bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
@@ -144,6 +144,20 @@ class PicLib(App):
         self.bottom_row.add_widget(next_button)
 
         return self.bottom_row
+    
+    def add_pageIndex_prev_next_to_bottomRow(self):
+        prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        prev_button.bind(on_press=self.go_to_previous_page)
+        next_button.bind(on_press=self.go_to_next_page)
+        self.bottom_row.add_widget(prev_button)
+
+        self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
+        self.bottom_row.add_widget(self.page_label)
+        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.13, 1))
+        self.bottom_row.add_widget(self.selected_images_label)
+
+        self.bottom_row.add_widget(next_button)
 
     def update_selected_images_label(self):
         num_selected_images = len((SelectableImage.selected_images))
@@ -204,6 +218,7 @@ class PicLib(App):
         tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
         self.main_panel.add_widget(self.button_bar)
         self.main_panel.add_widget(tag_display)
+        self.bottom_row.remove_widget(self.bottom_row_label)
 
         self.main_panel.spacing = 10
         for tagName in self.addedTags:
@@ -226,22 +241,28 @@ class PicLib(App):
         self.main_panel.add_widget(self.image_display)
 
 
-        image_names = self.get_image_names()
-        imagesWithTags = set()
-        for image in image_names:
-            cpimage = CPImage(image, self.image_folder)
-            for tag in self.addedTags:
-                if cpimage.hasTag(tag):
-                    imagesWithTags.add(self.image_folder+"/"+image)
-                    break
-        self.images = list(imagesWithTags)
+        image_names = self.get_image_names(self.image_folder)
+        imagesWithTags = list()
+        if len(self.addedTags) >= 1:
+            for image in image_names:
+                cpimage = CPImage(image, self.image_folder)
+                for tag in self.addedTags:
+                    if cpimage.hasTag(tag):
+                        imagesWithTags.append(self.image_folder+"/"+image)
+                        break
+        else:
+            for image in image_names:
+                imagesWithTags.append(self.image_folder+"/"+image)
+        self.images = imagesWithTags
         print("Self.images= "+str(self.images))
         
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
         # self.main_panel.add_widget(self.image_display)
         self.bottom_row.clear_widgets()
-        self.bottom_row.add_widget(Button(text="Tags: "+str()))
+        self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
+        self.bottom_row.add_widget(self.bottom_row_label)
+        self.add_pageIndex_prev_next_to_bottomRow()
 
     def create_empty_main_panel(self, instance):
         self.main_panel.clear_widgets()
@@ -266,8 +287,12 @@ class PicLib(App):
                 images.append(os.path.join(folder_path, filename))
         return images
     
-    def get_image_names(self): #Name of image file
-        return os.listdir(self.image_folder)
+    def get_image_names(self, folder_path): #Name of image file
+        images = []
+        for filename in os.listdir(folder_path):
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                images.append(filename)
+        return images
 
     def update_image_display(self):
         self.image_display.clear_widgets()
@@ -314,14 +339,17 @@ class PicLib(App):
 
         # Create the new buttons
         save_button = Button(text='T+', font_size=20, background_color='#94FFDA')
+        delete_button = Button(text='T-', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
         # Bind the new button actions
         save_button.bind(on_press=self.on_save_tags_button)
+        delete_button.bind(on_press=self.on_del_tags_button)
         cancel_button.bind(on_press=self.on_cancel_tags_button)
 
         # Add the new buttons to the button bar
         self.button_bar.add_widget(save_button)
+        self.button_bar.add_widget(delete_button)
         self.button_bar.add_widget(cancel_button)
 
     def on_save_tags_button(self, instance):
@@ -345,15 +373,58 @@ class PicLib(App):
 
         # Create the new buttons
         save_button = Button(text='T+', font_size=20, background_color='#94FFDA')
+        delete_button = Button(text='T-', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
         # Bind the new button actions
         save_button.bind(on_press=self.on_save_tags_button)
+        delete_button.bind(on_press=self.on_del_tags_button)
         cancel_button.bind(on_press=self.on_cancel_tags_button)
 
         # Add the new buttons to the button bar
         self.button_bar.add_widget(save_button)
+        self.button_bar.add_widget(delete_button)
         self.button_bar.add_widget(cancel_button)
+
+    def on_del_tags_button(self, instance):
+        # Perform actions when the "Save" button is pressed
+        print("Delete Tag button pressed")
+
+        # Create a popup with a text input for adding tags
+        popup_content = BoxLayout(orientation='vertical', padding=10)
+        tag_input = TextInput(multiline=False, hint_text='Delete tags')
+        add_button = Button(text='Delete')
+
+        popup_content.add_widget(tag_input)
+        popup_content.add_widget(add_button)
+
+        popup = Popup(title='Add Tags', content=popup_content, size_hint=(0.4, 0.4))
+        add_button.bind(on_press=lambda *args: self.del_tag(tag_input.text, popup))
+        popup.open()
+
+        # Remove the existing buttons from the button bar
+        self.button_bar.clear_widgets()
+
+        # Create the new buttons
+        save_button = Button(text='T+', font_size=20, background_color='#94FFDA')
+        delete_button = Button(text='T-', font_size=20, background_color='#94FFDA')
+        cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
+
+        # Bind the new button actions
+        save_button.bind(on_press=self.on_save_tags_button)
+        delete_button.bind(on_press=self.on_del_tags_button)
+        cancel_button.bind(on_press=self.on_cancel_tags_button)
+
+        # Add the new buttons to the button bar
+        self.button_bar.add_widget(save_button)
+        self.button_bar.add_widget(delete_button)
+        self.button_bar.add_widget(cancel_button)
+
+    def del_tag(self, tag, popup):
+        self.addedTags.remove(tag)
+        print(f"Tags: {tag}")
+        print(self.addedTags)
+        popup.dismiss()        
 
     def on_cancel_tags_button(self, instance):
         # Perform actions when the "Cancel" button is pressed
