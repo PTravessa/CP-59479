@@ -109,7 +109,13 @@ class PicLib(App):
         self.addedTags = []
         self.activeTags = []
 
+        #Buttons, BoxLayouts and labels
+        self.collection_tags_button = None
+        self.button_bar = None
         self.currentImgFolder = None
+        self.okButton = None
+        self.zip_button = None
+        self.rotate_button = None
 
     def build(self):
         self.create_top_row()
@@ -165,16 +171,19 @@ class PicLib(App):
     def update_selected_images_label(self):
         num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
-        if num_selected_images >= 1:
+        if num_selected_images == 1 and not self.zip_button in self.button_bar.children and not self.rotate_button in self.button_bar.children:
             self.add_zip_and_rot_to_buttonBar()
+        elif num_selected_images <= 0:
+            self.button_bar.remove_widget(self.zip_button)
+            self.button_bar.remove_widget(self.rotate_button)
 
     def add_zip_and_rot_to_buttonBar(self):
-        zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
-        rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
-        zip_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.zip_files_popup(images))
-        rotate_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.rotate_images(images))
-        self.button_bar.add_widget(zip_button)
-        self.button_bar.add_widget(rotate_button)
+        self.zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
+        self.rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
+        self.zip_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.zip_files_popup(images))
+        self.rotate_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.rotate_images(images))
+        self.button_bar.add_widget(self.zip_button)
+        self.button_bar.add_widget(self.rotate_button)
 
     def zip_files_popup(self, images):
         # Create a popup with a text input for adding tags
@@ -228,23 +237,23 @@ class PicLib(App):
     def create_button_bar(self):
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
-        collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
+        self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
         # C3 add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
-        collection_tags_button.bind(on_press=self.on_add_tags_button)
-        remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
-        search_button = Button(text='S', font_size=20, background_color='#94FFDA')
-        search_button.bind(on_press=self.load_tags)
-        zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
-        rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
+        self.collection_tags_button.bind(on_press=self.on_add_tags_button)
+        # self.remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
+        self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
+        self.search_button.bind(on_press=self.load_tags)
+        # zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
+        # rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
 
-        self.button_bar.add_widget(collection_tags_button)
-        self.button_bar.add_widget(remove_tags_button)
+        self.button_bar.add_widget(self.collection_tags_button)
+        # self.button_bar.add_widget(self.remove_tags_button)
 
         #This creates a shallow copy, so all changes in ogbuttonbar change buttonbar
         # self.original_button_bar = self.button_bar  # Store the original button bar
 
         #self.button_bar.add_widget(add_tags_button)
-        self.button_bar.add_widget(search_button)
+        self.button_bar.add_widget(self.search_button)
         #self.button_bar.add_widget(remove_tags_button)
         #self.button_bar.add_widget(zip_button)
         #self.button_bar.add_widget(rotate_button)
@@ -255,9 +264,9 @@ class PicLib(App):
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
 
-        okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
-        okButton.bind(on_press=self.load_scene_w_tags)
-        self.button_bar.add_widget(okButton)
+        self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
+        self.okButton.bind(on_press=self.load_scene_w_tags)
+        self.button_bar.add_widget(self.okButton)
 
         tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
         self.main_panel.add_widget(self.button_bar)
