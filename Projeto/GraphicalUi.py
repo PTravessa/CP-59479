@@ -11,8 +11,10 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
 from zipfile import ZipFile
+from PIL import Image as PILImage
 import random
 import math
+import copy
 
 default_folder = 'C:/Users/andre/CP/'
 #default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
@@ -195,8 +197,19 @@ class PicLib(App):
     
     def create_rotate_button(self):
         self.rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
-        self.rotate_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.rotate_images(images))
+        self.rotate_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rotate_image(image))
         return self.rotate_button
+    
+    def rotate_image(self, image=SelectableImage.selected_images):
+        imageId = list(image.values())[0].id
+        img_path = list(image.values())[0].image_source
+        print("img_path = "+str(img_path))
+        original_image = PILImage.open(img_path)
+        rotated_img = original_image.rotate(90)
+        rotated_img.save(img_path)
+        SelectableImage.selected_images[id] = SelectableImage(img_path, id=imageId)
+        self.update_image_display()
+
 
     def zip_files_popup(self, images):
         # Create a popup with a text input for adding tags
@@ -244,6 +257,7 @@ class PicLib(App):
         # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         self.image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
         self.images = self.load_images_from_folder(self.image_folder)
+        self.original_images = self.load_images_from_folder(self.image_folder) #Backup images
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
 
@@ -285,9 +299,10 @@ class PicLib(App):
         self.okButton.bind(on_press=self.load_scene_w_tags)
         self.button_bar.add_widget(self.okButton)
 
+        # self.activeTags = []
+        # self.images = copy.deepcopy(self.original_images)
         self.addTags_to_main_button = Button(text="<", font_size=20, background_color="#94FFDA")
         self.addTags_to_main_button.bind(on_press=self.on_cancel_tags_button)
-        self.activeTags = []
         self.button_bar.add_widget(self.addTags_to_main_button)
 
         self.tag_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
