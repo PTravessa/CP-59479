@@ -226,7 +226,7 @@ class PicLib(App):
            # Adding files that need to be zipped
            for imageKey in images:
                images[imageKey].image_source
-               print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
+            #    print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
                zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
         popup.dismiss()
 
