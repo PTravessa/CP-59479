@@ -328,7 +328,7 @@ class PicLib(App):
         return self.main_panel
 
 
-    def search_button(self):
+    def search_button_func(self):
         search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         search_button.bind(on_press=self.load_tags)
         return search_button
@@ -491,7 +491,7 @@ class PicLib(App):
         collection_tags_button.bind(on_press=self.on_add_tags_button)
         remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
 
-        search_button = self.search_button()
+        search_button = self.search_button_func()
         zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
         self.button_bar.clear_widgets()
