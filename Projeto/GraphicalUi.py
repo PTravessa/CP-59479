@@ -139,19 +139,25 @@ class PicLib(App):
 
     def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25)
+        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25, size_hint=(0.7, 0.99))
+        self.bottom_row_labelDate = Label(text='Date',color='#94FFDA', font_size=25, size_hint=(0.15, 0.99))
+        self.bottom_row.add_widget(self.bottom_row_labelDate)
         self.bottom_row.add_widget(self.bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
         next_button.bind(on_press=self.go_to_next_page)
-        self.bottom_row.add_widget(prev_button)
 
+        self.bottom_row.add_widget(prev_button)
         self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
         self.bottom_row.add_widget(self.page_label)
         self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.13, 1))
         self.bottom_row.add_widget(self.selected_images_label)
+
+        self.bottom_row.add_widget(next_button)
+
+        return self.bottom_row
 
         self.bottom_row.add_widget(next_button)
 
@@ -176,13 +182,13 @@ class PicLib(App):
         self.selected_images_label.text = f'Selected: {num_selected_images}'
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children and not self.rotate_button in self.button_bar.children:
             self.add_zip_and_rot_to_buttonBar()
-            # self.button_bar.add_widget(self.remove_tags_button)
+            self.button_bar.add_widget(self.remove_tags_button)
         if num_selected_images > 1:
             self.button_bar.remove_widget(self.rotate_button)
         elif num_selected_images <= 0:
             self.button_bar.remove_widget(self.zip_button)
             self.button_bar.remove_widget(self.rotate_button)
-            # self.button_bar.remove_widget(self.remove_tags_button)
+            self.button_bar.remove_widget(self.remove_tags_button)
 
     def add_zip_and_rot_to_buttonBar(self):
         self.create_zip_button()
@@ -269,7 +275,7 @@ class PicLib(App):
         self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
         # C3 add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
         self.collection_tags_button.bind(on_press=self.on_add_tags_button)
-        # self.remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
+        self.remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         self.search_button.bind(on_press=self.load_tags)
         # zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
@@ -560,7 +566,7 @@ class PicLib(App):
         self.button_bar.size_hint = (0.1, 1)
         self.button_bar.clear_widgets()
         self.button_bar.add_widget(collection_tags_button)
-        self.button_bar.add_widget(remove_tags_button)
+        #self.button_bar.add_widget(remove_tags_button)
         self.button_bar.add_widget(search_button)
         self.create_zip_button()
         self.button_bar.add_widget(self.zip_button)
