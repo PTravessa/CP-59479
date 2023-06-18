@@ -15,7 +15,7 @@ from zipfile import ZipFile
 import math
 
 default_folder = 'C:/Users/andre/CP/'
-
+#default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
     def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
@@ -71,16 +71,6 @@ class SelectableImage(CheckBox, ButtonBehavior):
                 self.frame_color.rgba = (1, 0, 0, 1)
             
         print(self.selected_images)
-
-        """else: #removes the before selected image
-            self.frame_color.rgba = (1, 1, 1, 1)  # White color when inactive
-            if self in self.selected_images:
-                self.selected_images.remove(self) """ # Remove self from selected_images list
-        
-        """else: #stores only one time the same file
-            self.frame_color.rgba = (1, 1, 1, 1)  
-            if self not in self.selected_images:
-                self.selected_images.remove(self) """
 
         # Call the update_selected_images_label method from PicLib
         app = App.get_running_app()
@@ -228,7 +218,7 @@ class PicLib(App):
         self.image_display = image_display
 
         # Load and display images from folder
-        # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        #self.image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         self.image_folder = 'C:/Users/andre/CP/fotos/AnaLibano'
         self.images = self.load_images_from_folder(self.image_folder)
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
@@ -446,13 +436,13 @@ class PicLib(App):
 
         # Create a popup with a text input for adding tags
         popup_content = BoxLayout(orientation='vertical', padding=10)
-        tag_input = TextInput(multiline=False, hint_text='Delete tags')
+        tag_input = TextInput(multiline=False, hint_text='Tags to remove')
         add_button = Button(text='Delete')
 
         popup_content.add_widget(tag_input)
         popup_content.add_widget(add_button)
 
-        popup = Popup(title='Add Tags', content=popup_content, size_hint=(0.4, 0.4))
+        popup = Popup(title='Remove Tags', content=popup_content, size_hint=(0.4, 0.4))
         add_button.bind(on_press=lambda *args: self.del_tag(tag_input.text, popup))
         popup.open()
 
@@ -510,7 +500,6 @@ class PicLib(App):
         popup.dismiss()
 
 PicLib().run()
-
 
 """Temos o layout das 3 caixas necessárias +1 classe para colocar cor na label,
 os botões das tags estão definidos no entanto
