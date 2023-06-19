@@ -1,3 +1,9 @@
+"""Projeto PicLib
+Faculdade de Ciências da Universidade de Lisboa
+Departamento de Informática
+Collabs: FC60919 (Jens Andreas) and FC59479 (Pedro Travessa)
+Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
+"""
 from PicLib_Phase1 import * #Must change the path for os.listdir
 from kivy.app import App
 from kivy.uix.label import Label
