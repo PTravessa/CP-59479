@@ -15,90 +15,11 @@ from PIL import Image as PILImage
 import random
 import math
 import copy
+from SelectableImage import *
+from BrownBoxLayout import *
 
-default_folder = 'C:/Users/andre/CP/'
-#default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-class BrownBoxLayout(BoxLayout):
-    # Class for brown box in label
-    def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
-        super().__init__(**kwargs)
-        with self.canvas.before:
-            Color(*background_color)
-            self.rect = Rectangle()
-            self.rect.pos = self.pos
-            self.rect.size = self.size
-        self.bind(pos=self._update_rect, size=self._update_rect)
-
-    def _update_rect(self, instance, value):
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
-
-#Imagens
-class SelectableImage(CheckBox, ButtonBehavior):
-    selected_images = dict()
-
-    def __init__(self, image_source, id, **kwargs):
-        super().__init__(**kwargs)
-        self.background_normal = ''  # Remove default background
-        self.group = 'images'
-        self.image_source = image_source
-        self.id = id
-        self.foldername = "/".join(self.image_source.split('\\')[:-1]) 
-        self.filename = self.image_source.split('\\')[-1]
-        self.cpimage = CPImage(self.filename, self.foldername)
-
-        self.image = Image(source=self.image_source)
-        self.add_widget(self.image)
-
-        with self.canvas.before:
-            self.frame_color = Color(1, 1, 1, 1)  # White color
-            self.frame = Rectangle(size=self.size, pos=self.pos)
-
-        self.bind(size=self._update_image_size, pos=self._update_image_pos)
-        self.bind(active=self.on_active)
-
-        if self.id in self.selected_images:
-            self.frame_color.rgba = (1, 0, 0, 1)        
-
-    def get_date(self):
-        return self.cpimage.getDate()
-
-    def rotate(self):
-        # im = Image.open(self.getImagefile())
-        self.image.rotate(-90, expand=True)
-        width, height = self.metadata['dimensions']
-        self.image.metadata['dimensions'] = (height, width)
-        self.image.reload()
-
-    def remove_tag(self, tag):
-        self.cpimage.removeTag(tag)
-
-    def on_active(self, instance, value):
-        if value:
-            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
-            if self.id not in self.selected_images:
-                self.selected_images[self.id]=self  # Add self to selected_images list
-            else:
-                self.selected_images.pop(self.id)
-                self.frame_color.rgba = (1, 1, 1, 1)
-        else:
-            if self.id not in self.selected_images:
-                self.frame_color.rgba = (1, 1, 1, 1)
-            else:
-                self.frame_color.rgba = (1, 0, 0, 1)
-            
-        print(self.selected_images)
-        app = App.get_running_app()
-        app.update_selected_images_label()
-    
-    def _update_image_size(self, *args):
-        self.image.size = self.size
-        self.frame.size = self.size
-
-    def _update_image_pos(self, *args):
-        self.image.pos = self.pos
-        self.frame.pos = self.pos
-
+#default_folder = 'C:/Users/andre/CP/'
+default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -109,7 +30,7 @@ class PicLib(App):
         self.image_display = None
         self.page_number = 1
         self.total_pages = 1
-        self.images_per_page =6  #25
+        self.images_per_page =20
         self.page_label = None
         self.addedTags = []
         self.activeTags = []
@@ -126,7 +47,7 @@ class PicLib(App):
         self.tag_display = None
         self.rem_tag_button = None
         self.add_tag_img_button = None
-        self.dateLabel = None
+        self.dateButton = None
         self.tagsInImages = set()
 
     def build(self):
@@ -148,8 +69,8 @@ class PicLib(App):
 
     def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        self.dateLabel = self.create_date_label()
-        self.bottom_row.add_widget(self.dateLabel)
+        self.dateButton = self.create_date_label()
+        self.bottom_row.add_widget(self.dateButton)
         self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         self.bottom_row.add_widget(self.bottom_row_label)
 
@@ -183,17 +104,20 @@ class PicLib(App):
         self.bottom_row.add_widget(next_button)
 
     def update_selected_images_label(self):
-        num_selected_images = len((SelectableImage.selected_images))
+        num_selected_images = len(SelectableImage.selected_images)
         self.selected_images_label.text = f'Selected: {num_selected_images}'
-        cur_img_date = ''
+        
         if num_selected_images >= 1:
             lastKey = list(SelectableImage.selected_images.keys())[-1]
-            cur_img_date = SelectableImage.selected_images[lastKey].get_date()
+            selected_image = SelectableImage.selected_images[lastKey]
+            cur_img_date = selected_image.get_date()
+            
             if cur_img_date == '':
                 cur_img_date = 'NA'
-            else: cur_img_date = cur_img_date[0:10]
-
-        self.dateLabel.text = "Date: " + cur_img_date
+            else:
+                cur_img_date = cur_img_date[:10]
+            
+            self.dateButton.text = "Date: " + cur_img_date
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
             # self.add_zip_and_rot_to_buttonBar()
             self.button_bar.add_widget(self.create_zip_button())
@@ -246,12 +170,12 @@ class PicLib(App):
         return self.rotate_button
     
     def create_remTag_button(self):
-        self.rem_tag_button = Button(text='T-', font_size=20, background_color='#94FFDA')
+        self.rem_tag_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         self.rem_tag_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rem_tag_page(image))
         return self.rem_tag_button
     
     def rem_tag_page(self, images = SelectableImage.selected_images):
-        print("sakdhfdjknkjasnkanfk")
+        print("Tag removed")
         self.tagsInImages = set()
         cpiImgs = []
         for image in images:
@@ -289,7 +213,7 @@ class PicLib(App):
             self.create_tag_display()
 
     def create_addTag_img_button(self):
-        self.add_tag_img_button = Button(text='T+', font_size=20, background_color='#94FFDA')
+        self.add_tag_img_button = Button(text='+T', font_size=20, background_color='#94FFDA')
         self.add_tag_img_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.add_tag_img_page(image))
         return self.add_tag_img_button
 
@@ -304,10 +228,6 @@ class PicLib(App):
     def rem_rotateButton(self):
         if self.rotate_button in self.button_bar.children:
             self.button_bar.remove_widget(self.rotate_button)
-
-
-
-
     
     def rotate_image(self, image=SelectableImage.selected_images):
         imageId = list(image.values())[0].id
@@ -362,9 +282,67 @@ class PicLib(App):
         popup.dismiss()
 
     def create_date_label(self):
-        self.dateLabel = Label(text="Date: ", size_hint=(0.4, 1))
-        return self.dateLabel
+        self.dateButton = Button(text="Date: ", size_hint=(0.15, 1), on_press=self.setnewdate, background_color='#94FFDA')
+        return self.dateButton
 
+    def setnewdate(self, btn):
+        def update_selected_images_date():
+            num_selected_images = len(SelectableImage.selected_images)
+            if num_selected_images >= 1:
+                last_key = list(SelectableImage.selected_images.keys())[-1]
+                selected_image = SelectableImage.selected_images[last_key]
+                cur_img_date = selected_image.get_date()
+
+                if cur_img_date == '':
+                    cur_img_date = 'NA'
+                else:
+                    cur_img_date = cur_img_date[:10]
+
+                new_date = f"{newyear.text}:{newmonth.text}:{newday.text}"
+                new_date = cur_img_date.replace(cur_img_date[:10], new_date)
+
+                selected_image.set_date(new_date)  # Set the new date for the selected image
+                self.dateButton.text = "Date: " + new_date[:10]
+
+        def addday(textinput):
+            newday.focus = True
+            if len(textinput.text) == 1:
+                textinput.text = '0' + textinput.text
+            textinput.text = textinput.text[:2]
+            update_selected_images_date()
+
+        def addmonth(textinput):
+            newmonth.focus = True
+            if len(textinput.text) == 1:
+                textinput.text = '0' + textinput.text
+            textinput.text = textinput.text[:2]
+            update_selected_images_date() 
+
+        def addyear(textinput):
+            newyear.focus = True
+            textinput.text = textinput.text[:4]
+            update_selected_images_date() 
+
+        newday = TextInput(multiline=False, on_text_validate=addday)
+        newmonth = TextInput(multiline=False, on_text_validate=addmonth)
+        newyear = TextInput(multiline=False, on_text_validate=addyear)
+
+        def confirm_date(instance):
+            # Handle the confirmed date
+            print("Confirmed date:", newyear.text, newmonth.text, newday.text)
+            self.popup.dismiss()
+
+        content = BoxLayout(orientation='horizontal')
+        self.popup = Popup(title='Enter new Date (YYYY:MM:DD)', content=content, size_hint=(0.5, 0.2))
+
+        content.add_widget(newyear)
+        content.add_widget(newmonth)
+        content.add_widget(newday)
+
+        confirm_button = Button(text="Confirm", on_release=confirm_date)
+        content.add_widget(confirm_button)
+
+        self.popup.open()
 
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
@@ -377,8 +355,8 @@ class PicLib(App):
         self.image_display = image_display
 
         # Load and display images from folder
-        # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-        self.image_folder = 'C:/Users/andre/CP/fotos/'
+        self.image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
+        #self.image_folder = 'C:/Users/andre/CP/fotos/'
         self.images = self.load_images_from_folder(self.image_folder)
         self.original_images = self.load_images_from_folder(self.image_folder) #Backup images
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
@@ -414,7 +392,7 @@ class PicLib(App):
         return self.button_bar
     
     def rem_tag_from_image_button(self):
-        self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
+        self.rem_tag_image = Button(text='-T', font_size=20, background_color='#94FFDA')
         self.search_button.bind(on_press=self.load_tags)
     
     def ok_button(self):
