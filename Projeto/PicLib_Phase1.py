@@ -1,4 +1,9 @@
-
+"""Projeto PicLib
+Faculdade de Ciências da Universidade de Lisboa
+Departamento de Informática
+Collabs: FC60919 (Jens Andreas) and FC59479 (Pedro Travessa)
+Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
+"""
 from abc import ABC, abstractmethod
 import os
 import shutil
@@ -127,7 +132,7 @@ class ImageCollection(CPCollection):
     
 class CPImage(Serializable):
     images = []
-    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'):
+    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'): #'C:/Users/ASUS/Desktop/fotosPicLib'
         """
         CPImage class.
         Args: Filename of the image file.
@@ -220,7 +225,7 @@ class CPImage(Serializable):
             print("Image file already in folder")        
         return CPImage(cpImage.imageFile, newPath)
 
-    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'):
+    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'): #'C:/Users/ASUS/Desktop/fotosPicLib/collectionsRootFolder'
         """
         Copies the image to the folder.
         """
@@ -458,6 +463,7 @@ TAGS[TAG_ID] = "Tags"
 new_tag_id = TAGS.get("Tags")
 
 # path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
+# path = 'C:/Users/ASUS/Desktop/fotosPicLib/AnaLibano' # Path PTravessa
 import os
 # assign directory
  
@@ -466,11 +472,12 @@ import os
 fl = []
 
 #Substituir estes folders pelos seus e criar novos
-AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/"
-fotoDir = "C:/Users/andre/CP/fotos/"
+AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/" #"C:/Users/ASUS/Desktop/fotosPicLib/AnaLibano/"
+fotoDir = "C:/Users/andre/CP/fotos/" #"C:/Users/ASUS/Desktop/fotosPicLib"
 collectionDir = "C:/Users/andre/CP/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-albumDir = "C:/Users/andre/CP/Album/"
-imageColDir = "C:/Users/andre/CP/ImageCollections/"
+#collectionDir = "C:/Users/ASUS/Desktop/fotosPicLib/CollectionsRootFolder/"
+albumDir = "C:/Users/andre/CP/Album/" #"C:/Users/ASUS/Desktop/fotosPicLib/Album/"
+imageColDir = "C:/Users/andre/CP/ImageCollections/" #"C:/Users/ASUS/Desktop/fotosPicLib/ImageCollections/"
 
 
 if not os.path.isdir(AnaLibanoDir):
