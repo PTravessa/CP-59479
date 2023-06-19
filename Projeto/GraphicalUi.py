@@ -57,6 +57,12 @@ class SelectableImage(CheckBox, ButtonBehavior):
         if self.id in self.selected_images:
             self.frame_color.rgba = (1, 0, 0, 1)        
 
+    def rotate(self):
+        # im = Image.open(self.getImagefile())
+        self.image.rotate(-90, expand=True)
+        width, height = self.metadata['dimensions']
+        self.image.metadata['dimensions'] = (height, width)
+        self.image.reload()
 
     def on_active(self, instance, value):
         if value:
@@ -116,9 +122,11 @@ class PicLib(App):
         self.button_bar = None
         self.currentImgFolder = None
         self.okButton = None
+        self.cancel_button = None
         self.zip_button = None
         self.rotate_button = None
         self.tag_display = None
+        self.rem_tag_button = None
 
     def build(self):
         self.create_top_row()
@@ -174,14 +182,28 @@ class PicLib(App):
     def update_selected_images_label(self):
         num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
-        if num_selected_images == 1 and not self.zip_button in self.button_bar.children and not self.rotate_button in self.button_bar.children:
-            self.add_zip_and_rot_to_buttonBar()
+        if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
+            # self.add_zip_and_rot_to_buttonBar()
+            self.button_bar.add_widget(self.create_zip_button())
             # self.button_bar.add_widget(self.remove_tags_button)
+        if num_selected_images == 1 and not self.rotate_button in self.button_bar.children:
+            if self.rem_tag_button not in self.button_bar.children:
+                self.create_remTag_button()
+                self.button_bar.add_widget(self.rem_tag_button)
+            self.button_bar.add_widget(self.create_rotate_button())
         if num_selected_images > 1:
-            self.button_bar.remove_widget(self.rotate_button)
+            if self.rem_tag_button not in self.button_bar.children:
+                self.create_remTag_button()
+                self.button_bar.add_widget(self.rem_tag_button)
+            if self.rotate_button in self.button_bar.children:
+                self.button_bar.remove_widget(self.rotate_button)
         elif num_selected_images <= 0:
-            self.button_bar.remove_widget(self.zip_button)
-            self.button_bar.remove_widget(self.rotate_button)
+            if self.zip_button in self.button_bar.children:
+                self.button_bar.remove_widget(self.zip_button)
+            if self.rem_tag_button in self.button_bar.children:
+                self.button_bar.remove_widget(self.rem_tag_button)
+            if self.rotate_button in self.button_bar.children:
+                self.button_bar.remove_widget(self.rotate_button)
             # self.button_bar.remove_widget(self.remove_tags_button)
 
     def add_zip_and_rot_to_buttonBar(self):
@@ -200,16 +222,94 @@ class PicLib(App):
         self.rotate_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rotate_image(image))
         return self.rotate_button
     
+    def create_remTag_button(self):
+        self.rem_tag_button = Button(text='T-', font_size=20, background_color='#94FFDA')
+        self.rem_tag_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rem_tag_page(image))
+        return self.rem_tag_button
+    
+    def rem_tag_page(self, images = SelectableImage.selected_images):
+        tagsInImages = set()
+        cpiImgs = []
+        for image in images:
+            print(list(images.values())[0].image_source.split("/"))
+            filePath = list(images.values())[0].image_source.split("/")[-1]
+            folderPath = list(images.values())[0].image_source.split("/")[:-1]
+            folderPath = "/".join(folderPath)
+            # cpiImgs.append(CPImage(filePath, folderPath))
+            tags = CPImage(filePath, folderPath).getTagsList()
+            for tag in tags:
+                tagsInImages.add(tag)
+        
+        if self.image_display in self.main_panel.children:
+            self.main_panel.remove_widget(self.image_display)
+        self.button_bar.clear_widgets()
+        self.cancel_button = self.get_cancel_button()
+        self.button_bar.add_widget(self.cancel_button)
+        self.current_img_tags = self.create_tag_display(tagList=tagsInImages)
+        self.main_panel.add_widget(self.current_img_tags)
+
+    def rem_remTagButton(self):
+        if self.rem_tag_button in self.button_bar.children:
+            self.button_bar.remove_widget(self.rem_tag_button)
+
+    def rem_zipButton(self):
+        if self.zip_button in self.button_bar.children:
+            self.button_bar.remove_widget(self.zip_button)
+
+    def rem_rotateButton(self):
+        if self.rotate_button in self.button_bar.children:
+            self.button_bar.remove_widget(self.rotate_button)
+
+
+
+    #Delete l8r prob
+    def create_remTag_popup(self, instance):
+        popup = Popup()
+        popup_content = BoxLayout(orientation='vertical', padding=10)
+        tag_input = TextInput(multiline=False, hint_text='Enter tag')
+
+        okButton = Button(text='Ok')
+        okButton.bind(on_press=lambda *args: self.rem_tag(images=SelectableImage.selected_images, tag=tag_input, popup=popup))
+        popup_content.add_widget(tag_input)
+        popup_content.add_widget(okButton)
+        # popup_content.add_widget(zip_button)
+
+        popup = Popup(title='Enter the tag to remove', content=popup_content, size_hint=(0.4, 0.4))
+
+        popup.open()
+
+    def rem_tag(self, images, tag, popup):
+        popup.dismiss()
+        # size = len(SelectableImage.selected_images.values().image_source)
+        cpiImgs = []
+        for image in images:
+            print(list(images.values())[0].image_source.split("/"))
+            filePath = list(images.values())[0].image_source.split("/")[-1]
+            folderPath = list(images.values())[0].image_source.split("/")[:-1]
+            folderPath = "/".join(folderPath)
+            # cpiImgs.append(CPImage(filePath, folderPath))
+            print("before removing tag "+str(tag.text)+" CPImage(filePath, folderPath).getTagsList = "+str(CPImage(filePath, folderPath).getTagsList()))
+            CPImage(filePath, folderPath).removeTag(tag.text)
+            print("after removing tag "+str(tag.text)+" CPImage(filePath, folderPath).getTagsList = "+str(CPImage(filePath, folderPath).getTagsList()))
+
+    
     def rotate_image(self, image=SelectableImage.selected_images):
         imageId = list(image.values())[0].id
         img_path = list(image.values())[0].image_source
         print("img_path = "+str(img_path))
         original_image = PILImage.open(img_path)
-        original_image.resize([original_image.height, original_image.width])
-        rotated_img = original_image.rotate(-90)
+        # original_image.resize([original_image.height, original_image.width])
+        rotated_img = original_image.rotate(-90, expand=True)
+        width, height = original_image.size
+
+        rotated_img.resize((height, width))
         rotated_img.save(img_path)
         self.images[imageId-1] = img_path
         SelectableImage.selected_images[imageId] = SelectableImage(img_path, id=imageId)
+        # SelectableImage.selected_images[imageId].image.rotate()
+        SelectableImage.selected_images[imageId].image.reload()
+        
+
         self.update_image_display()
 
 
@@ -217,7 +317,7 @@ class PicLib(App):
         # Create a popup with a text input for adding tags
         popup_content = BoxLayout(orientation='vertical', padding=10)
         zip_filename = TextInput(multiline=False, hint_text='Enter zip path')
-        zip_folder = TextInput(multiline=False, hint_text='Enter full folderPath (write "defaultss" for default)', text='')
+        zip_folder = TextInput(multiline=False, hint_text='Enter full folderPath (write "default" for default)', text='')
         zip_button = Button(text='Ok')
         zip_button.bind(on_press=lambda *args: self.zip_files(images=SelectableImage.selected_images, zip_filename=zip_filename.text, zip_folder=zip_folder.text, popup=popup))
         popup_content.add_widget(zip_filename)
@@ -267,6 +367,8 @@ class PicLib(App):
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
 
         self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
+
+        self.rem_tag_button = self.create_remTag_button()
         # C3 add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
         self.collection_tags_button.bind(on_press=self.on_add_tags_button)
         # self.remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
@@ -276,6 +378,7 @@ class PicLib(App):
         # rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
 
         self.button_bar.add_widget(self.collection_tags_button)
+        self.button_bar.add_widget(self.rem_tag_button)
         # self.button_bar.add_widget(self.remove_tags_button)
 
         #This creates a shallow copy, so all changes in ogbuttonbar change buttonbar
@@ -293,12 +396,16 @@ class PicLib(App):
         self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
         self.search_button.bind(on_press=self.load_tags)
     
+    def ok_button(self):
+        self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
+        self.okButton.bind(on_press=self.load_scene_w_tags)
+        return self.okButton        
+
     def load_tags(self, instance):
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
 
-        self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
-        self.okButton.bind(on_press=self.load_scene_w_tags)
+        self.okButton = self.ok_button()
         self.button_bar.add_widget(self.okButton)
 
         # self.activeTags = []
@@ -433,6 +540,36 @@ class PicLib(App):
             self.page_number += 1
             self.update_image_display()
 
+    def get_cancel_button(self):
+        self.cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
+        self.cancel_button.bind(on_press=self.on_cancel_tags_button)
+        return self.cancel_button
+
+    def on_add_tags_button1(self, instance):
+        # Remove the existing buttons from the button bar
+        self.button_bar.clear_widgets()
+
+        # Create the new buttons
+        save_button = Button(text='+T', font_size=20, background_color='#94FFDA')
+        #delete_button = Button(text='-T', font_size=20, background_color='#94FFDA')
+        self.cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
+
+        # Bind the new button actions
+        save_button.bind(on_press=self.on_save_tags_button)
+        #delete_button.bind(on_press=self.on_del_tags_button)
+        self.cancel_button.bind(on_press=self.on_cancel_tags_button)
+
+        # Add the new buttons to the button bar
+        self.button_bar.add_widget(save_button)
+        #self.button_bar.add_widget(delete_button)
+        self.button_bar.add_widget(self.cancel_button)
+
+        # Remove the image display
+        self.main_panel.remove_widget(self.image_display)
+        self.tag_display = self.create_tag_display(tagList=self.addedTags)
+        if self.tag_display not in self.main_panel.children:
+            self.main_panel.add_widget(self.tag_display)
+
     def on_add_tags_button(self, instance):
         # Remove the existing buttons from the button bar
         self.button_bar.clear_widgets()
@@ -454,21 +591,36 @@ class PicLib(App):
 
         # Remove the image display
         self.main_panel.remove_widget(self.image_display)
-        self.tag_display = self.create_tag_display()
+        self.tag_display = self.create_tag_display(SelectableImage.selected_images)
         if self.tag_display not in self.main_panel.children:
             self.main_panel.add_widget(self.tag_display)
 
-    def create_tag_display(self):
-        if self.tag_display is not None:
-            return self.tag_display
-        self.tag_display = BoxLayout(orientation='vertical', size_hint=(0.6, 1))
+    def create_tag_display(self, tagList):
 
-        for tagName in self.addedTags:
-            b = Button(text=tagName, font_size=20, background_color="#94FFDA", size_hint=(0.1, 0.1))
-            b.bind(on_press=lambda _, tag=tagName: self.add_active_tag(tag))
-            self.tag_display.add_widget(b)
+        self.tag_display = BoxLayout(orientation='horizontal', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
+        tag_display1 = BoxLayout(orientation='vertical', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
+        colN = 3
+        subDispN = len(self.addedTags)//colN +1
+
+        i = 0
+        for x in range(subDispN):
+            i = (x+1)*colN
+            print("x = "+str(x))
+
+            if i % colN == 0:
+                tag_display1 = BoxLayout(orientation='vertical', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
+                for i1 in range(colN):
+                    print("i1 = "+str(i1))
+                    print("x = "+str(x))
+                    if (x * colN + i1)<= len(self.addedTags) -1:
+                        b = Button(text=self.addedTags[x * colN + i1], font_size=20, background_color="#94FFDA", size_hint=(0.3, 0.3))
+                        tag_display1.add_widget(b)
+                    print("x * colN + i1 = "+str(x * colN + i1))
+                    print("tag_display1 "+ str(tag_display1))
+                self.tag_display.add_widget(tag_display1)
+                print("tag_display "+ str(self.tag_display))
+
         return self.tag_display
-
 
     def on_save_tags_button(self, instance):
         # Perform actions when the "Save" button is pressed
@@ -525,17 +677,17 @@ class PicLib(App):
 
         # Create the new buttons
         save_button = Button(text='+T', font_size=20, background_color='#94FFDA')
-        delete_button = Button(text='-T', font_size=20, background_color='#94FFDA')
+        # delete_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
         # Bind the new button actions
         save_button.bind(on_press=self.on_save_tags_button)
-        delete_button.bind(on_press=self.on_del_tags_button)
+        # delete_button.bind(on_press=self.on_del_tags_button)
         cancel_button.bind(on_press=self.on_cancel_tags_button)
 
         # Add the new buttons to the button bar
         self.button_bar.add_widget(save_button)
-        self.button_bar.add_widget(delete_button)
+        self.button_bar.add_widget(self.rem_tag_button)
         self.button_bar.add_widget(cancel_button)
 
     def del_tag(self, tag, popup):
@@ -550,23 +702,22 @@ class PicLib(App):
         # Perform actions when the "Cancel" button is pressed
         print("Cancel button pressed")
 
-        # Restore the original button bar
-        collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
-        collection_tags_button.bind(on_press=self.on_add_tags_button)
-        remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
+        # # Restore the original button bar
+        # # collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
+        # # collection_tags_button.bind(on_press=self.on_add_tags_button)
+        # remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
 
         self.main_panel.remove_widget(self.tag_display)
         search_button = self.search_button_func()
         self.button_bar.size_hint = (0.1, 1)
         self.button_bar.clear_widgets()
-        self.button_bar.add_widget(collection_tags_button)
-        self.button_bar.add_widget(remove_tags_button)
+        self.button_bar.add_widget(self.collection_tags_button)
+        # self.button_bar.add_widget(self.rem_tag_button)
         self.button_bar.add_widget(search_button)
-        self.create_zip_button()
-        self.button_bar.add_widget(self.zip_button)
-        self.create_rotate_button()
-        self.button_bar.add_widget(self.rotate_button)
+        self.update_selected_images_label()
         self.main_panel.add_widget(self.image_display)
+        if self.tag_display in self.main_panel.children:
+            self.main_panel.remove_widget(self.tag_display)
         
 
     def add_tags(self, tags, popup):
@@ -574,6 +725,10 @@ class PicLib(App):
         self.addedTags.append(tags)
         print(f"Tags: {tags}")
         print(self.addedTags)
+        if self.tag_display in self.main_panel.children:
+            self.main_panel.remove_widget(self.tag_display)
+        self.tag_display = self.create_tag_display(tagList=self.addedTags)
+        self.main_panel.add_widget(self.tag_display)
         popup.dismiss()
 
 PicLib().run()
