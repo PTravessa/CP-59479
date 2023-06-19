@@ -1,11 +1,14 @@
-# CP_Project-PicLib
+# Projeto-PicLib
 Pic-Lib Project \
-FC60919 and FC59479 
+Jens Andreas & Pedro Travessa \
+FC60919 and FC59479 \
+**Make sure to search where to change paths in both PicLib_Phase1/PicLib_Phase2, find box -> #ChangeDir ->results is where is need to change paths.**
 # Project Part 1:
 Creates a library enables you to create a collection based on the images given by default folder. \
 **Must change the path directly in code** so you´re able to run it and create instances.
 # Project Part 2:
-This App enables an edit interface for **.jpg** or **.png** images and allows the user to search and interact  with the metadata (Adding or removing Tags and Date) \
+
+This App enables an edit interface for **.jpg** or **.png** images and allows the user to search and interact with the metadata (Adding or removing Tags and Date) \
 \
 **Must replace path directly in code:** \
 Imports all **.jpg** or **.png** files in the folder into the image display box. \
@@ -16,7 +19,7 @@ Buttons displayed at start:
 
 Selecting one and only one image:
 - The **R90 button** appears when one image at a time is selected activating it´s function(90º degree rotation).
-- The **Date** of the selected image is displayed at the left bottom.
+- The **Date button** of the selected image is displayed at the left bottom, shows up a popup to change the Date of that image when pressed.
 - The **Zip button** appears, the user as the option to create a ZIP file with that image (or more).
 
 Selecting more than one image:
@@ -25,4 +28,8 @@ or more images.
 - The **-T button** allows the user to remove the tags related to those images.
 - The **Zip button** appears, the user as the option to create a ZIP file with that image (or more).
 
+Observations: \
+Most of all, it´s all working even tought we caught some bugs on the way. \
+**+T** and **-T** Tag buttons not working in main panel soo gracefully altough its working in Tag Collection (**T**) \
+**Date button** It appears to be working, it saves and changes the date but not directly setDate() obs.
 
