@@ -126,6 +126,7 @@ class ImageCollection(CPCollection):
         return [item for item in images if item[-4:] == ".jpg"]
     
 class CPImage(Serializable):
+    images = []
     def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'):
         """
         CPImage class.
@@ -173,28 +174,51 @@ class CPImage(Serializable):
         return dict
 
     @staticmethod
-    def makeCPImage(filename, dir_path):
+    def getAllImages(dirPath):
+        for filename in os.listdir(dirPath):
+            fullPath = os.path.join(dirPath, filename)
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                CPImage.images.append(fullPath)
+            elif os.path.isdir(fullPath):
+                CPImage.getAllImages(fullPath)
+        return CPImage.images
+    
+    @staticmethod
+    def makeAllCPImages(dirPath, newDirPath):
+        images = CPImage.getAllImages(dirPath)
+        for image in images:
+            filename = str(image.split("\\")[-1])
+            foldername = "/".join(image.split("\\")[:-1])
+            CPImage.makeCPImage(filename, foldername, newDirPath)
+
+    @staticmethod
+    def makeCPImage(filename, dir_path, newDirPath):
         if not os.path.exists(dir_path+"/"+filename):
             print("The image has to exist in the specified folder")
             return 
         cpImage = CPImage(filename, dir_path)
         date = cpImage.getDate()
+        if date == "":
+            return
         date = date.split(":")
         year = date[0]
+        month = date[1]
+        day = date[2].split(" ")[0]
+
         #List of the names of sub folders of album 
-        folder_path= dir_path
+        folder_path= newDirPath
         directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
         fileNames = [x.split("/")[-1] for x in directoryPaths] 
-        newPath = folder_path+"/"+year
+        newPath = folder_path+"/"+year+"/"+month+"/"+day+"/"
         print(fileNames)
         print(year)
-        if year not in fileNames: #If there is no year album, create one
-            os.mkdir(newPath)
+        if not os.path.isdir(newPath): #If there is no year album, create one
+            os.makedirs(newPath)
         if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
-            shutil.copy(cpImage.path+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
+            shutil.copy(cpImage.dirPath+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
         else:
             print("Image file already in folder")        
-        return CPImage(cpImage.imageFile)
+        return CPImage(cpImage.imageFile, newPath)
 
     def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'):
         """
@@ -440,17 +464,37 @@ import os
 # iterate over files in
 # that directory
 fl = []
-fotoDir = "C:/Users/andre/CP/fotos/AnaLibano"
-for filename in os.listdir(fotoDir):
-    f = os.path.join(fotoDir, filename)
+
+#Substituir estes folders pelos seus e criar novos
+AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/"
+fotoDir = "C:/Users/andre/CP/fotos/"
+collectionDir = "C:/Users/andre/CP/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+albumDir = "C:/Users/andre/CP/Album/"
+imageColDir = "C:/Users/andre/CP/ImageCollections/"
+
+
+if not os.path.isdir(AnaLibanoDir):
+    os.makedirs(AnaLibanoDir)
+if not os.path.isdir(fotoDir):
+    os.makedirs(fotoDir)
+if not os.path.isdir(collectionDir):    
+    os.makedirs(collectionDir)
+if not os.path.isdir(albumDir):    
+    os.makedirs(albumDir)
+if not os.path.isdir(imageColDir):    
+    os.makedirs(imageColDir)
+
+
+for filename in os.listdir(AnaLibanoDir):
+    f = os.path.join(AnaLibanoDir, filename)
     # checking if it is a file
     if os.path.isfile(f):
         # print(filename)
         fl.append(filename)
 
-image1 = CPImage(fl[16], fotoDir)
+image1 = CPImage(fl[16], AnaLibanoDir)
 image1.addTag("TestTag1")
-img2 = CPImage(fl[2], fotoDir)
+img2 = CPImage(fl[4], AnaLibanoDir)
 img2.addTag("TestTag5")
 
 print("\n "+str(image1.__dict__))
@@ -481,13 +525,14 @@ imgCol.saveCollection()
 # imgCol.loadCollection()
 
 # print("\n\n exif tags img1 = "+str(image1.getExifTags()))
-collectionDir = "C:/Users/andre/CP/collectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
 image1.copyToFolder(collectionDir)
 # print("\n\n image1.etags[\"DateTime\"] = " + str(image1.etags["DateTime"]))
 # print("\n\n img tags img1 = "+str(image1.getTags()))
 
 
 print("fl[4] = " + str(fl[4]) + " path = " + str(collectionDir))
-imageTest = CPImage.makeCPImage(fl[4], collectionDir)
+imageTest = CPImage.makeCPImage(fl[16], AnaLibanoDir, collectionDir)
 print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
-print("fl[4]" + str(fl[4]) + "path" + str(collectionDir))
+print("fl[4]" + str(fl[4]) + "path" + str( collectionDir))
+
+CPImage.makeAllCPImages(fotoDir, albumDir)
