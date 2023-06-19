@@ -26,7 +26,8 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):
+    #ChangeDir
+    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):#'C:/Users/ASUS/Desktop/fotosPicLib/collectionsRootFolder' 
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -132,6 +133,7 @@ class ImageCollection(CPCollection):
     
 class CPImage(Serializable):
     images = []
+    #ChangeDir
     def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'): #'C:/Users/ASUS/Desktop/fotosPicLib'
         """
         CPImage class.
@@ -224,7 +226,7 @@ class CPImage(Serializable):
         else:
             print("Image file already in folder")        
         return CPImage(cpImage.imageFile, newPath)
-
+    #ChangeDir
     def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'): #'C:/Users/ASUS/Desktop/fotosPicLib/collectionsRootFolder'
         """
         Copies the image to the folder.
