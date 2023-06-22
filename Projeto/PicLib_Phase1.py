@@ -1,9 +1,3 @@
-"""Projeto PicLib
-Faculdade de Ciências da Universidade de Lisboa
-Departamento de Informática
-Collabs: FC60919 (Jens Andreas) and FC59479 (Pedro Travessa)
-Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
-"""
 from abc import ABC, abstractmethod
 import os
 import shutil
@@ -26,8 +20,7 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    #ChangeDir
-    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):#'C:/Users/ASUS/Desktop/fotosPicLib/collectionsRootFolder' 
+    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -133,8 +126,7 @@ class ImageCollection(CPCollection):
     
 class CPImage(Serializable):
     images = []
-    #ChangeDir
-    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'): #'C:/Users/ASUS/Desktop/fotosPicLib'
+    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'):
         """
         CPImage class.
         Args: Filename of the image file.
@@ -226,8 +218,8 @@ class CPImage(Serializable):
         else:
             print("Image file already in folder")        
         return CPImage(cpImage.imageFile, newPath)
-    #ChangeDir
-    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'): #'C:/Users/ASUS/Desktop/fotosPicLib/collectionsRootFolder'
+
+    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'):
         """
         Copies the image to the folder.
         """
@@ -329,6 +321,8 @@ class CPImage(Serializable):
         """
         Adds a tag string to the exif metadata of the image.
         """ 
+        if tag == "":
+            raise ValueError("Tag can't be an empty string")
         etag = [] #tag dos metadados, nao relacionados a classe tag
         etagId = []
         for etag_id in self.exif:
@@ -465,7 +459,6 @@ TAGS[TAG_ID] = "Tags"
 new_tag_id = TAGS.get("Tags")
 
 # path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
-# path = 'C:/Users/ASUS/Desktop/fotosPicLib/AnaLibano' # Path PTravessa
 import os
 # assign directory
  
@@ -474,12 +467,11 @@ import os
 fl = []
 
 #Substituir estes folders pelos seus e criar novos
-AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/" #"C:/Users/ASUS/Desktop/fotosPicLib/AnaLibano/"
-fotoDir = "C:/Users/andre/CP/fotos/" #"C:/Users/ASUS/Desktop/fotosPicLib"
+AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/"
+fotoDir = "C:/Users/andre/CP/fotos/"
 collectionDir = "C:/Users/andre/CP/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-#collectionDir = "C:/Users/ASUS/Desktop/fotosPicLib/CollectionsRootFolder/"
-albumDir = "C:/Users/andre/CP/Album/" #"C:/Users/ASUS/Desktop/fotosPicLib/Album/"
-imageColDir = "C:/Users/andre/CP/ImageCollections/" #"C:/Users/ASUS/Desktop/fotosPicLib/ImageCollections/"
+albumDir = "C:/Users/andre/CP/Album/"
+imageColDir = "C:/Users/andre/CP/ImageCollections/"
 
 
 if not os.path.isdir(AnaLibanoDir):
@@ -503,6 +495,7 @@ for filename in os.listdir(AnaLibanoDir):
 
 image1 = CPImage(fl[16], AnaLibanoDir)
 image1.addTag("TestTag1")
+image1.addTag("TestTag5")
 img2 = CPImage(fl[4], AnaLibanoDir)
 img2.addTag("TestTag5")
 
@@ -517,31 +510,20 @@ print("\n img2 remove tag")
 img2.removeTag("TestTag2")
 print("\n img2 exif tags "+str(img2.getTags()))
 
-
-print("\n\n IMG1.__dict__ "+str(image1.__dict__))
-print("\n\n IMG2.__dict__ "+str(img2.__dict__))
-
 #ImageCollection Testing
 imgCol = ImageCollection("imageCollection1.txt", [image1], "C:/Users/andre/CP/ImageCollections/")
 imgCol.registerItem(img2)
 imgCol.registerItem(image1)
 imgCol.saveCollection()
 
-# cpImgs1 =imgCol.findWithTag("TestTag1")
-# for cpImg in cpImgs1:
-#     print("CPImage = "+str(cpImg)+" file = "+str(cpImg.getImageFile()))
-# print("\n\n load ImgCol ")
-# imgCol.loadCollection()
-
-# print("\n\n exif tags img1 = "+str(image1.getExifTags()))
 image1.copyToFolder(collectionDir)
-# print("\n\n image1.etags[\"DateTime\"] = " + str(image1.etags["DateTime"]))
-# print("\n\n img tags img1 = "+str(image1.getTags()))
 
-
-print("fl[4] = " + str(fl[4]) + " path = " + str(collectionDir))
 imageTest = CPImage.makeCPImage(fl[16], AnaLibanoDir, collectionDir)
-print("imageTest = CPImage.makeCPImage(fl[4], path) = "+str(imageTest))
-print("fl[4]" + str(fl[4]) + "path" + str( collectionDir))
 
 CPImage.makeAllCPImages(fotoDir, albumDir)
+
+print(image1.getTagsList())
+img2.addTag("TestTag5")
+print(img2.getTagsList())
+img2.removeTag("")
+print(img2.getTagsList())
