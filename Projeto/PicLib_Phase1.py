@@ -135,7 +135,11 @@ class CPImage(Serializable):
         #self.path = 'C://Users//ASUS//Desktop//Project Pics//AnaLibano//P_20201226_145438.jpg'
         self.dirPath = dirPath
         print(self.dirPath)
-        image = Image.open(self.dirPath + "/" + self.imageFile)
+        path = self.dirPath + "/" + self.imageFile
+        path = path.replace("//", "/")
+        if path[0] == "/":
+            path.removeprefix("/") 
+        image = Image.open(path)
         if image.getexif() is not None:
             self.exif = image.getexif()
             self.etags = self.getExifTags()

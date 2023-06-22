@@ -44,8 +44,8 @@ class SelectableImage(CheckBox, ButtonBehavior):
         self.group = 'images'
         self.image_source = image_source
         self.id = id
-        self.foldername = "/".join(self.image_source.split('\\')[:-1]) 
-        self.filename = self.image_source.split('\\')[-1]
+        self.foldername = "/".join(self.image_source.split('/')[:-1]) 
+        self.filename = self.image_source.split('/')[-1]
         self.cpimage = CPImage(self.filename, self.foldername)
 
         self.image = Image(source=self.image_source)
@@ -119,6 +119,7 @@ class PicLib(App):
         self.addedTags = []
         self.activeTags = []
         self.images = []
+        self.imageNames = []
 
         #Buttons, BoxLayouts and labels
         self.collection_tags_button = None
@@ -198,18 +199,16 @@ class PicLib(App):
             if cur_img_date == '':
                 cur_img_date = 'NA'
             else: cur_img_date = cur_img_date[0:10]
-
         self.dateLabel.text = "Date: " + cur_img_date
+        
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
-            # self.add_zip_and_rot_to_buttonBar()
-            self.button_bar.add_widget(self.create_zip_button())
-            # self.button_bar.add_widget(self.remove_tags_button)
-        if num_selected_images == 1 and not self.rotate_button in self.button_bar.children:
-            if self.rem_tag_button not in self.button_bar.children:
-                self.create_remTag_button()
-                self.button_bar.add_widget(self.rem_tag_button)
-            self.button_bar.add_widget(self.create_rotate_button())
-        if num_selected_images == 1:
+            if not self.zip_button in self.button_bar.children:
+                self.button_bar.add_widget(self.create_zip_button())
+            if not self.rotate_button in self.button_bar.children:
+                if self.rem_tag_button not in self.button_bar.children:
+                    self.create_remTag_button()
+                    self.button_bar.add_widget(self.rem_tag_button)
+                self.button_bar.add_widget(self.create_rotate_button())
             if self.add_tag_img_button not in self.button_bar.children:
                 self.create_addTag_img_button()
                 self.button_bar.add_widget(self.add_tag_img_button)        
@@ -259,15 +258,39 @@ class PicLib(App):
     def rem_tag_page(self, images = SelectableImage.selected_images):
         self.tagsInImages = set()
         cpiImgs = []
-        for image in images:
-            print(list(images.values())[0].image_source.split("/"))
-            filePath = list(images.values())[0].image_source.split("/")[-1]
-            folderPath = list(images.values())[0].image_source.split("/")[:-1]
+
+        listOfSetsOfTags = []
+        for key in images.keys():
+            filePath = list(images[key].image_source.split("/"))[-1]
+            folderPath = list(images[key].image_source.split("/"))[:-1]
             folderPath = "/".join(folderPath)
             # cpiImgs.append(CPImage(filePath, folderPath))
             tags = CPImage(filePath, folderPath).getTagsList()
+            temp = set()
             for tag in tags:
                 self.tagsInImages.add(tag)
+                temp.add(tag)
+            listOfSetsOfTags.append(temp)
+
+            i = 0
+            temp = listOfSetsOfTags[0]
+            if len(listOfSetsOfTags) > 1:
+                while i < len(listOfSetsOfTags)-1:
+                    temp = temp.intersection(listOfSetsOfTags[i+1])
+                    i += 1
+        self.tagsInImages = temp
+
+        # for image in images:
+        #     print(list(images.values())[0].image_source.split("/"))
+        #     filePath = list(image.values())[0].image_source.split("/")[-1]
+        #     folderPath = list(image.values())[0].image_source.split("/")[:-1]
+        #     folderPath = "/".join(folderPath)
+        #     # cpiImgs.append(CPImage(filePath, folderPath))
+        #     tags = CPImage(filePath, folderPath).getTagsList()
+        #     for tag in tags:
+        #         self.tagsInImages.add(tag)
+
+        print("self.tagsInImages = "+str(self.tagsInImages))
         
         if self.image_display in self.main_panel.children:
             self.main_panel.remove_widget(self.image_display)
@@ -280,21 +303,28 @@ class PicLib(App):
             self.main_panel.add_widget(self.tag_display)
         for layout in self.tag_display.children:
             for tagButton in layout.children:
-                print("TagButton = " +str(tagButton))
-                tagButton.bind(on_press=lambda _, images=SelectableImage.selected_images: self.rem_tag_image(images, tagButton.text, tagButton))
+                tag = tagButton.text  # Capture the current value of tagButton.text
+
+                # Define a helper function with a default argument capturing the current tag value
+                def on_press_callback(_, images=images, tagButton=tagButton, tag=tag):
+                    self.rem_tag_image(images, tag, tagButton)
+
+                tagButton.bind(on_press=on_press_callback)  # Bind the helper function
 
     def rem_tag_image(self, images, tag, tagButton):
         for key in images.keys():
             selectableImg = images[key]
-            print("tagType: "+str(tag.__class__))
+            print("tag: "+str(tag))
             selectableImg.remove_tag(tag)
             self.tagsInImages.discard(tag)
+            print("tagsInImages discarded tag: "+str(tag))
             tagButton.unbind(on_press=self.rem_tag_image)
 
-            if self.tag_display in self.main_panel.children:
-                self.main_panel.remove_widget(self.tag_display)
-            self.create_tag_display(tagList=list(self.tagsInImages))
-            self.on_cancel_tags_button(Button())
+        #Changed
+        if self.tag_display in self.main_panel.children:
+            self.main_panel.remove_widget(self.tag_display)
+        self.create_tag_display(tagList=list(self.tagsInImages))
+        self.on_cancel_tags_button(Button())
 
     def create_addTag_img_button(self):
         self.add_tag_img_button = Button(text='T+', font_size=20, background_color='#94FFDA')
@@ -412,7 +442,7 @@ class PicLib(App):
         # Load and display images from folder
         # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         # self.image_folder = 'C:/Users/andre/CP/fotos/'
-        self.image_folder = default_folder+"/fotos/"
+        self.image_folder = default_folder+"fotos/"
         if not os.path.isdir(self.image_folder):
             os.mkdir(self.image_folder)
         self.images = self.load_images_from_folder(self.image_folder)
@@ -422,40 +452,23 @@ class PicLib(App):
 
     def create_button_bar(self):
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
-
         self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
 
         self.rem_tag_button = self.create_remTag_button()
-        # C3 add_tags_button = Button(text='+T', font_size=20, background_color='#94FFDA')
         self.collection_tags_button.bind(on_press=self.on_add_tags_button)
-        # self.remove_tags_button = Button(text='-T', font_size=20, background_color='#94FFDA')
-        self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
-        self.search_button.bind(on_press=self.load_tags)
-        # zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
-        # rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
+        self.search_button = self.create_search_button()
 
         self.button_bar.add_widget(self.collection_tags_button)
-        # self.button_bar.add_widget(self.rem_tag_button)
-        # self.button_bar.add_widget(self.remove_tags_button)
-
-        #This creates a shallow copy, so all changes in ogbuttonbar change buttonbar
-        # self.original_button_bar = self.button_bar  # Store the original button bar
-
-        #self.button_bar.add_widget(add_tags_button)
         self.button_bar.add_widget(self.search_button)
-        #self.button_bar.add_widget(remove_tags_button)
-        #self.button_bar.add_widget(zip_button)
-        #self.button_bar.add_widget(rotate_button)
-
         return self.button_bar
     
-    def rem_tag_from_image_button(self):
-        self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
-        self.search_button.bind(on_press=self.load_tags)
+    # def rem_tag_from_image_button(self):
+    #     self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
+    #     self.rem_tag_fro.bind(on_press=self.load_tags)
     
     def ok_button(self):
         self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
-        self.okButton.bind(on_press=self.load_scene_w_tags)
+        self.okButton.bind(on_press=self.load_scene_w_tags1)
         return self.okButton        
 
     def load_tags(self, instance):
@@ -482,6 +495,7 @@ class PicLib(App):
 
 
         self.main_panel.spacing = 10
+        
         for tagName in self.addedTags:
             b = Button(text=tagName, font_size=20, background_color="#94FFDA", size_hint=(0.1, 0.1))
             b.bind(on_press=lambda _, tag=tagName: self.add_active_tag(tag))
@@ -489,7 +503,69 @@ class PicLib(App):
 
     def add_active_tag(self, tag):
         if tag not in self.activeTags:
+            print("add_activeTag tag = "+tag)
             self.activeTags.append(tag)
+
+    def load_scene_w_tags1(self, instance):
+        self.main_panel.clear_widgets()
+        self.button_bar.clear_widgets()
+        self.button_bar = self.create_button_bar()
+        self.main_panel.add_widget(self.button_bar)
+
+        # self.main_panel.add_widget(self.button_bar)
+        if self.reset_active_tags_button in self.button_bar.children:
+            self.button_bar.remove_widget(self.reset_active_tags_button)
+        self.main_panel.remove_widget(self.tag_display)
+        self.main_panel.add_widget(self.image_display)
+
+
+        self.images = self.load_images_from_folder1(self.image_folder)
+        self.get_image_names(self.image_folder)
+        
+        print("self.image_folder = "+str(self.image_folder))
+        imagesWithTags = list()
+        image_names = []
+        image_dirs = []
+        if len(self.activeTags) >= 1:
+            for image in self.images:
+                image = image.replace("\\", "/")
+                image = image.replace("//", "/")
+                name = image.split("/")[-1]
+                dir = "/".join(image.split("/")[:-1]) + "/"
+                dir = dir.replace("\\", "/")
+                dir = dir.replace("//", "/")
+                print("image = " +str(image))
+                print("dir = " +str(dir))
+                print("name = " +str(name))
+                image_dirs.append(dir)
+                cpimage = CPImage(name, dir)
+                for tag in self.activeTags:
+                    if cpimage.hasTag(tag):
+                        imagesWithTags.append(dir+"/"+name)
+                        break
+        else:
+            for image in self.images:
+
+                image = image.replace("\\", "/")
+                image = image.replace("//", "/")
+                name = image.split("/")[-1]
+                dir = "/".join(image.split("/")[:-1]) + "/"
+                dir = dir.replace("\\", "/")
+                dir = dir.replace("//", "/")
+                imagesWithTags.append(dir+"/"+name)
+        self.images = imagesWithTags
+        if len(self.activeTags) <=0:
+            self.images = copy.deepcopy(self.original_images)
+        print("Self.images= "+str(self.images))
+        
+        self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+        self.update_image_display()
+        # self.main_panel.add_widget(self.image_display)
+        self.bottom_row.clear_widgets()
+        self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
+        self.bottom_row.add_widget(self.bottom_row_label)
+        self.add_pageIndex_prev_next_to_bottomRow()
+
 
     def load_scene_w_tags(self, instance):
         self.main_panel.clear_widgets()
@@ -504,17 +580,19 @@ class PicLib(App):
         self.main_panel.add_widget(self.image_display)
 
 
-        image_names = self.get_image_names(self.image_folder)
+        self.get_image_names(self.image_folder)
+        print("image_names = "+str(self.image_names))
+        print("self.image_folder = "+str(self.image_folder))
         imagesWithTags = list()
         if len(self.activeTags) >= 1:
-            for image in image_names:
+            for image in self.image_names:
                 cpimage = CPImage(image, self.image_folder)
                 for tag in self.activeTags:
                     if cpimage.hasTag(tag):
                         imagesWithTags.append(self.image_folder+"/"+image)
                         break
         else:
-            for image in image_names:
+            for image in self.image_names:
                 imagesWithTags.append(self.image_folder+"/"+image)
         self.images = imagesWithTags
         if len(self.activeTags) <=0:
@@ -529,10 +607,10 @@ class PicLib(App):
         self.bottom_row.add_widget(self.bottom_row_label)
         self.add_pageIndex_prev_next_to_bottomRow()
 
-    def search_button_func(self):
-        search_button = Button(text='S', font_size=20, background_color='#94FFDA')
-        search_button.bind(on_press=self.load_tags)
-        return search_button
+    def create_search_button(self):
+        self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
+        self.search_button.bind(on_press=self.load_tags)
+        return self.search_button
 
     def load_images_from_folder(self, folder_path): #Full path of image file
         for filename in os.listdir(folder_path):
@@ -543,15 +621,23 @@ class PicLib(App):
                 self.load_images_from_folder(fullPath)
         return self.images
     
+    def load_images_from_folder1(self, folder_path): #Full path of image file
+        for filename in os.listdir(folder_path):
+            fullPath = folder_path +"/"+ filename
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                self.images.append(fullPath)
+            elif os.path.isdir(fullPath):
+                self.load_images_from_folder(fullPath)
+        return self.images
+    
     def get_image_names(self, folder_path): #Name of image file
-        images = []
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg'):
-                images.append(filename)
+                self.imageNames.append(filename)
             elif os.path.isdir(fullPath):
                 self.get_image_names(fullPath)
-        return images
+        return self.imageNames
 
     def update_image_display(self):
         self.image_display.clear_widgets()
@@ -603,31 +689,6 @@ class PicLib(App):
         self.cancel_button.bind(on_press=self.on_cancel_tags_button)
         return self.cancel_button
 
-    def on_add_tags_button1(self, instance):
-        # Remove the existing buttons from the button bar
-        self.button_bar.clear_widgets()
-
-        # Create the new buttons
-        save_button = Button(text='+T', font_size=20, background_color='#94FFDA')
-        #delete_button = Button(text='-T', font_size=20, background_color='#94FFDA')
-        self.cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
-
-        # Bind the new button actions
-        save_button.bind(on_press=self.on_save_tags_button)
-        #delete_button.bind(on_press=self.on_del_tags_button)
-        self.cancel_button.bind(on_press=self.on_cancel_tags_button)
-
-        # Add the new buttons to the button bar
-        self.button_bar.add_widget(save_button)
-        #self.button_bar.add_widget(delete_button)
-        self.button_bar.add_widget(self.cancel_button)
-
-        # Remove the image display
-        self.main_panel.remove_widget(self.image_display)
-        self.tag_display = self.create_tag_display(tagList=self.addedTags)
-        if self.tag_display not in self.main_panel.children:
-            self.main_panel.add_widget(self.tag_display)
-
     def on_add_tags_button(self, instance):
         # Remove the existing buttons from the button bar
         self.button_bar.clear_widgets()
@@ -667,7 +728,7 @@ class PicLib(App):
             self.main_panel.add_widget(self.tag_display)
 
     def create_tag_display(self, tagList):
-
+        print("ctd taglist = " + str(tagList) )
         self.tag_display = BoxLayout(orientation='horizontal', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
         tag_display1 = BoxLayout(orientation='vertical', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
         colN = 3
@@ -684,11 +745,11 @@ class PicLib(App):
                     print("i1 = "+str(i1))
                     print("x = "+str(x))
                     if (x * colN + i1)<= len(tagList) -1:
-                        if tagList[x * colN + i1] == "": break
+                        if tagList[x * colN + i1] == "": continue
                         b = Button(text=tagList[x * colN + i1], font_size=20, background_color="#94FFDA", size_hint=(0.3, 0.3))
                         tag_display1.add_widget(b)
+                        print("tag_display1 adds = "+str(tagList[x * colN + i1]))
                     print("x * colN + i1 = "+str(x * colN + i1))
-                    print("tag_display1 "+ str(tag_display1))
                 self.tag_display.add_widget(tag_display1)
                 print("tag_display "+ str(self.tag_display))
 
@@ -776,7 +837,7 @@ class PicLib(App):
 
         if self.tag_display in self.main_panel.children:
             self.main_panel.remove_widget(self.tag_display)
-        search_button = self.search_button_func()
+        search_button = self.create_search_button()
         self.button_bar.size_hint = (0.1, 1)
         self.button_bar.clear_widgets()
         self.button_bar.add_widget(self.collection_tags_button)
@@ -825,4 +886,3 @@ leva nos a um novo layout, ainda estou a tentar perceber como integrar os difere
  até ao botão ok que aciona o popup para dar add à Tag mas o de voltar da crash a app"""
 """Outra coisa, deves ter de instalar o sdl12 do kivy,
 (pip install "kivy[sdl2]") no terminal """
-
