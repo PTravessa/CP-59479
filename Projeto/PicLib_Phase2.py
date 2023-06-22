@@ -16,7 +16,8 @@ import random
 import math
 import copy
 
-default_folder = 'C:/Users/andre/CP/' #Substituir este path com o do 
+#Substituir este path com o seu, e esta diretoria tem que ter a pasta "fotos"
+default_folder = 'C:/Users/andre/CP/TestFolder/' 
 #default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
 class BrownBoxLayout(BoxLayout):
     # Class for brown box in label
@@ -131,6 +132,7 @@ class PicLib(App):
         self.rem_tag_button = None
         self.add_tag_img_button = None
         self.dateLabel = None
+        self.reset_active_tags_button = None
         self.tagsInImages = set()
 
     def build(self):
@@ -379,7 +381,7 @@ class PicLib(App):
         # # Create a ZipFile Object
         if not zip_filename.endswith('.zip'):
             zip_filename += '.zip'
-        if zip_folder == 'defaultss':
+        if zip_folder == 'default':
             zip_folder = default_folder
         zip_path = zip_folder+"/ZippedImageFolder/"+zip_filename 
         if not os.path.isdir(zip_folder+"/ZippedImageFolder/"):
@@ -682,6 +684,7 @@ class PicLib(App):
                     print("i1 = "+str(i1))
                     print("x = "+str(x))
                     if (x * colN + i1)<= len(tagList) -1:
+                        if tagList[x * colN + i1] == "": break
                         b = Button(text=tagList[x * colN + i1], font_size=20, background_color="#94FFDA", size_hint=(0.3, 0.3))
                         tag_display1.add_widget(b)
                     print("x * colN + i1 = "+str(x * colN + i1))
