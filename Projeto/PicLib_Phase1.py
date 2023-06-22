@@ -473,6 +473,13 @@ collectionDir = "C:/Users/andre/CP/CollectionsRootFolder/" #Tem que se fazer um 
 albumDir = "C:/Users/andre/CP/Album/"
 imageColDir = "C:/Users/andre/CP/ImageCollections/"
 
+from PicLib_Phase2 import default_folder
+AnaLibanoDir = default_folder+"/fotos/AnaLibano/"
+fotoDir = default_folder+"/fotos/"
+collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+albumDir = default_folder+"/Album/"
+imageColDir = default_folder+"/ImageCollections/"
+
 
 if not os.path.isdir(AnaLibanoDir):
     os.makedirs(AnaLibanoDir)
