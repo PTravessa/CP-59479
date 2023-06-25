@@ -12,97 +12,35 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
 from zipfile import ZipFile
 from PIL import Image as PILImage
+from BrownBoxLayout import *
+from SelectableImage import *
+from FolderSelectionPopup import *
 import random
 import math
 import copy
+import tkinter as tk
+from tkinter import filedialog
+import os
+#Bug check on add tags sometimes it doenst display the image plus data display removed when changing layouts
 
 #Substituir este path com o seu, e esta diretoria tem que ter a pasta "fotos"
-default_folder = 'C:/Users/andre/CP/TestFolder/' 
-#default_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-class BrownBoxLayout(BoxLayout):
-    # Class for brown box in label
-    def __init__(self, background_color=(139/255, 69/255, 19/255, 1), **kwargs):
-        super().__init__(**kwargs)
-        with self.canvas.before:
-            Color(*background_color)
-            self.rect = Rectangle()
-            self.rect.pos = self.pos
-            self.rect.size = self.size
-        self.bind(pos=self._update_rect, size=self._update_rect)
+#default_folder = 'C:/Users/andre/CP/TestFolder/' 
+#default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
-    def _update_rect(self, instance, value):
-        self.rect.pos = instance.pos
-        self.rect.size = instance.size
+# User Example
+default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
-#Imagens
-class SelectableImage(CheckBox, ButtonBehavior):
-    selected_images = dict()
+folder_popup = FolderSelectionPopup(default_folder)
+folder_popup.select_folder()
 
-    def __init__(self, image_source, id, **kwargs):
-        super().__init__(**kwargs)
-        self.background_normal = ''  # Remove default background
-        self.group = 'images'
-        self.image_source = image_source
-        self.id = id
-        self.foldername = "/".join(self.image_source.split('/')[:-1]) 
-        self.filename = self.image_source.split('/')[-1]
-        self.cpimage = CPImage(self.filename, self.foldername)
-
-        self.image = Image(source=self.image_source)
-        self.add_widget(self.image)
-
-        with self.canvas.before:
-            self.frame_color = Color(1, 1, 1, 1)  # White color
-            self.frame = Rectangle(size=self.size, pos=self.pos)
-
-        self.bind(size=self._update_image_size, pos=self._update_image_pos)
-        self.bind(active=self.on_active)
-
-        if self.id in self.selected_images:
-            self.frame_color.rgba = (1, 0, 0, 1)        
-
-    def get_date(self):
-        return self.cpimage.getDate()
-
-    def rotate(self):
-        # im = Image.open(self.getImagefile())
-        self.image.rotate(-90, expand=True)
-        width, height = self.metadata['dimensions']
-        self.image.metadata['dimensions'] = (height, width)
-        self.image.reload()
-
-    def remove_tag(self, tag):
-        self.cpimage.removeTag(tag)
-
-    def add_tag(self, tag):
-        self.cpimage.addTag(tag)
-
-    def on_active(self, instance, value):
-        if value:
-            self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
-            if self.id not in self.selected_images:
-                self.selected_images[self.id]=self  # Add self to selected_images list
-            else:
-                self.selected_images.pop(self.id)
-                self.frame_color.rgba = (1, 1, 1, 1)
-        else:
-            if self.id not in self.selected_images:
-                self.frame_color.rgba = (1, 1, 1, 1)
-            else:
-                self.frame_color.rgba = (1, 0, 0, 1)
-            
-        print(self.selected_images)
-        app = App.get_running_app()
-        app.update_selected_images_label()
-    
-    def _update_image_size(self, *args):
-        self.image.size = self.size
-        self.frame.size = self.size
-
-    def _update_image_pos(self, *args):
-        self.image.pos = self.pos
-        self.frame.pos = self.pos
-
+selected_folder = folder_popup.get_selected_folder()
+if selected_folder:
+    default_folder = selected_folder
+    if not default_folder.endswith("/"):
+        default_folder += "/"
+    print("Selected folder:", default_folder)
+else:
+    print("No folder selected, using default folder:", default_folder)
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -646,6 +584,9 @@ class PicLib(App):
         end_index = self.page_number * self.images_per_page
         images_to_display = self.images[start_index:end_index]
 
+        # Shuffle the images randomly
+        random.shuffle(images_to_display)
+
         rows = len(images_to_display) // 5  # Number of rows to create
         if len(images_to_display) % 5 != 0:
             rows += 1
@@ -657,10 +598,6 @@ class PicLib(App):
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
                 image_index += 1
-
-                ####Testar
-                # Randomly select an image
-                # random_image = random.choice(self.images)
 
                 image = SelectableImage(image_source=image_path, id=image_index)
                 image.bind(on_release=self.on_image_selected)
