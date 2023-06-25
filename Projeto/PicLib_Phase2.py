@@ -18,9 +18,7 @@ from FolderSelectionPopup import *
 import random
 import math
 import copy
-import tkinter as tk
-from tkinter import filedialog
-import os
+
 #Bug check on add tags sometimes it doenst display the image plus data display removed when changing layouts
 
 #Substituir este path com o seu, e esta diretoria tem que ter a pasta "fotos"
@@ -91,15 +89,15 @@ class PicLib(App):
         top_row_label = Label(text='PicLib', font_size=40)
         self.top_row.add_widget(top_row_label)
 
-    def create_bottom_row(self): #Has label, functional~ prev next buttons, 
+    def create_bottom_row(self):
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel)
-        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
+        self.bottom_row_label = Label(text='Tags', color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         self.bottom_row.add_widget(self.bottom_row_label)
 
-        prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
-        next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        prev_button = Button(text='<', font_size=20, background_color='#94FFDA', size_hint=(0.1, 0.99))
+        next_button = Button(text='>', font_size=20, background_color='#94FFDA', size_hint=(0.1, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
         next_button.bind(on_press=self.go_to_next_page)
         self.bottom_row.add_widget(prev_button)
@@ -110,6 +108,11 @@ class PicLib(App):
         self.bottom_row.add_widget(self.selected_images_label)
 
         self.bottom_row.add_widget(next_button)
+
+        # Button to change images_per_page value
+        change_button = Button(text='Change', font_size=12, background_color='#94FFDA', size_hint=(0.1, 0.99))
+        change_button.bind(on_press=self.change_images_per_page)
+        self.bottom_row.add_widget(change_button)
 
         return self.bottom_row
     
@@ -126,6 +129,34 @@ class PicLib(App):
         self.bottom_row.add_widget(self.selected_images_label)
 
         self.bottom_row.add_widget(next_button)
+
+    def change_images_per_page(self, instance):
+        # Create a popup to get the new value
+        content = BoxLayout(orientation='vertical', spacing=10)
+        input_text = TextInput(text=str(self.images_per_page), multiline=False)
+        save_button = Button(text='Save')
+
+        def save_value(instance):
+            # Update the images_per_page value with the new input
+            try:
+                new_value = int(input_text.text)
+                if new_value >= 6 and new_value <= 25:
+                    self.images_per_page = new_value
+                    print(f"images_per_page changed to {self.images_per_page}")
+                    self.update_image_display()
+                else:
+                    print("Invalid value. The range should be between 6 and 25.")
+            except ValueError:
+                print("Invalid value. Please enter a valid integer.")
+
+            popup.dismiss()
+
+        save_button.bind(on_press=save_value)
+        content.add_widget(input_text)
+        content.add_widget(save_button)
+
+        popup = Popup(title='Change Images Per Page', content=content, size_hint=(0.6, 0.4))
+        popup.open()
 
     def update_selected_images_label(self):
         num_selected_images = len((SelectableImage.selected_images))
@@ -380,7 +411,7 @@ class PicLib(App):
         # Load and display images from folder
         # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         # self.image_folder = 'C:/Users/andre/CP/fotos/'
-        self.image_folder = default_folder+"fotos/"
+        self.image_folder = default_folder #+"fotos/"
         if not os.path.isdir(self.image_folder):
             os.mkdir(self.image_folder)
         self.images = self.load_images_from_folder(self.image_folder)
