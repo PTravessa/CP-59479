@@ -110,7 +110,7 @@ class PicLib(App):
         self.bottom_row.add_widget(next_button)
 
         # Button to change images_per_page value
-        change_button = Button(text='Change', font_size=12, background_color='#94FFDA', size_hint=(0.1, 0.99))
+        change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
         change_button.bind(on_press=self.change_images_per_page)
         self.bottom_row.add_widget(change_button)
 
@@ -133,19 +133,19 @@ class PicLib(App):
     def change_images_per_page(self, instance):
         # Create a popup to get the new value
         content = BoxLayout(orientation='vertical', spacing=10)
-        input_text = TextInput(text=str(self.images_per_page), multiline=False)
+        input_text = TextInput(text=str(self.images_per_page), multiline=False, hint_text='Enter Number of Images to Display')
         save_button = Button(text='Save')
 
         def save_value(instance):
             # Update the images_per_page value with the new input
             try:
                 new_value = int(input_text.text)
-                if new_value >= 6 and new_value <= 25:
+                if new_value > 0:
                     self.images_per_page = new_value
                     print(f"images_per_page changed to {self.images_per_page}")
                     self.update_image_display()
                 else:
-                    print("Invalid value. The range should be between 6 and 25.")
+                    print("Invalid value. The range should be bigger than 1.")
             except ValueError:
                 print("Invalid value. Please enter a valid integer.")
 
@@ -615,16 +615,30 @@ class PicLib(App):
         end_index = self.page_number * self.images_per_page
         images_to_display = self.images[start_index:end_index]
 
-        # Shuffle the images randomly
         random.shuffle(images_to_display)
 
-        rows = len(images_to_display) // 5  # Number of rows to create
-        if len(images_to_display) % 5 != 0:
+        if self.images_per_page >= 1 and self.images_per_page <= 5:
+            max_images_per_row = 3
+            max_rows = 2
+        elif self.images_per_page >= 6 and self.images_per_page <= 12:
+            max_images_per_row = 3
+            max_rows = 2
+        elif self.images_per_page >= 13 and self.images_per_page <= 20:
+            max_images_per_row = 4
+            max_rows = 4
+        else:
+            max_images_per_row = 5
+            max_rows = 5
+
+        images_count = len(images_to_display)
+        rows = images_count // max_images_per_row
+        if images_count % max_images_per_row != 0:
             rows += 1
+        rows = min(rows, max_rows)
 
         image_index = start_index
         for i in range(rows):
-            row_images = images_to_display[i * 5:(i + 1) * 5]
+            row_images = images_to_display[i * max_images_per_row:(i + 1) * max_images_per_row]
 
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
@@ -636,6 +650,7 @@ class PicLib(App):
 
             self.image_display.add_widget(row_layout)
             self.page_label.text = f'Page {self.page_number}'
+
 
     def on_image_selected(self, instance):
         # Perform actions when an image is selected
