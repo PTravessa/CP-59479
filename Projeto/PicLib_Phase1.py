@@ -321,17 +321,23 @@ class CPImage(Serializable):
         return {"filename": self.imageFile, "tags": l}
 
 
-    def addTag(self, tag): 
+    def addTag(self, tag):
         """
         Adds a tag string to the exif metadata of the image.
-        """ 
+        """
         if tag == "":
-            raise ValueError("Tag can't be an empty string")
-        etag = [] #tag dos metadados, nao relacionados a classe tag
+            print("Error: Tag can't be an empty string")
+            return  # Cancels the operation and stays in the app
+        
+        etag = []  # tag dos metadados, nao relacionados a classe tag
         etagId = []
-        for etag_id in self.exif:
-            etag.append(TAGS.get(etag_id, etag_id))
-            etagId.append(etag_id)
+        try:
+            for etag_id in self.exif:
+                etag.append(TAGS.get(etag_id, etag_id))
+                etagId.append(etag_id)
+        except ValueError as e:
+            print("Error:", str(e))
+            return  # Cancels the operation and stays in the app
 
         # Open the image file
         img = Image.open(self.dirPath+"/"+self.imageFile)

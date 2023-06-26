@@ -24,11 +24,14 @@ from FolderSelectionPopup import *
 import random
 import math
 import copy
-#Data change button not avaiable still
-#Bug check on add tags sometimes it doesnt display the image plus data display removed when changing layouts
-#When the input for add tag is empty it crashes
+
+#Data change button not available still
+#Bug check on add tags sometimes it doesnt display the image plus date display removed when changing layouts
 #Need Documentation from previous Final Version
 #Save collection in folder not zipped one
+#Tags not displaying
+#When clicking reset there's a bug that removes change images display and date
+
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
@@ -626,9 +629,9 @@ class PicLib(App):
             max_rows = 2
         elif self.images_per_page >= 6 and self.images_per_page <= 12:
             max_images_per_row = 3
-            max_rows = 2
+            max_rows = 4
         elif self.images_per_page >= 13 and self.images_per_page <= 20:
-            max_images_per_row = 4
+            max_images_per_row = 5
             max_rows = 4
         else:
             max_images_per_row = 5
