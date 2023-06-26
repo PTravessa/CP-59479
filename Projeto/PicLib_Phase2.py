@@ -26,7 +26,7 @@ import math
 import copy
 
 #Bug check on add tags sometimes it doenst display the image plus data display removed when changing layouts
-#Must Update SelectableImage file!!
+#When the input for add tag is empty it crashes
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 

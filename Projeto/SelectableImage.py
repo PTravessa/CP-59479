@@ -14,8 +14,8 @@ class SelectableImage(CheckBox, ButtonBehavior):
         self.group = 'images'
         self.image_source = image_source
         self.id = id
-        self.foldername = "/".join(self.image_source.split('\\')[:-1]) 
-        self.filename = self.image_source.split('\\')[-1]
+        self.foldername = "/".join(self.image_source.split('/')[:-1]) 
+        self.filename = self.image_source.split('/')[-1]
         self.cpimage = CPImage(self.filename, self.foldername)
 
         self.image = Image(source=self.image_source)
@@ -44,6 +44,9 @@ class SelectableImage(CheckBox, ButtonBehavior):
     def remove_tag(self, tag):
         self.cpimage.removeTag(tag)
 
+    def add_tag(self, tag):
+        self.cpimage.addTag(tag)
+
     def on_active(self, instance, value):
         if value:
             self.frame_color.rgba = (1, 0, 0, 1)  # Red color when active
@@ -69,4 +72,3 @@ class SelectableImage(CheckBox, ButtonBehavior):
     def _update_image_pos(self, *args):
         self.image.pos = self.pos
         self.frame.pos = self.pos
-
