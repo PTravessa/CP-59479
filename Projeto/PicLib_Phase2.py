@@ -24,9 +24,11 @@ from FolderSelectionPopup import *
 import random
 import math
 import copy
-
-#Bug check on add tags sometimes it doenst display the image plus data display removed when changing layouts
+#Data change button not avaiable still
+#Bug check on add tags sometimes it doesnt display the image plus data display removed when changing layouts
 #When the input for add tag is empty it crashes
+#Need Documentation from previous Final Version
+#Save collection in folder not zipped one
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
