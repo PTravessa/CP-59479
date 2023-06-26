@@ -26,7 +26,7 @@ import math
 import copy
 
 #Data change button not available still
-#Bug check on add tags sometimes it doesnt display the image plus date display removed when changing layouts
+#Tags are written in pictures but not in the library or tag collection 
 #Need Documentation from previous Final Version
 #Save collection in folder not zipped one
 #Tags not displaying
@@ -100,7 +100,7 @@ class PicLib(App):
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel)
-        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
+        self.bottom_row_label = Label(text='Tags:',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         self.bottom_row.add_widget(self.bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
