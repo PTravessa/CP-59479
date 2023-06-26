@@ -1,3 +1,9 @@
+"""Projeto PicLib
+Faculdade de Ciências da Universidade de Lisboa
+Departamento de Informática
+Collabs: FC60919 (Jens Andreas) and FC59479 (Pedro Travessa)
+Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
+"""
 from PicLib_Phase1 import * #Must change the path for os.listdir
 from kivy.app import App
 from kivy.uix.label import Label
@@ -20,11 +26,7 @@ import math
 import copy
 
 #Bug check on add tags sometimes it doenst display the image plus data display removed when changing layouts
-
-#Substituir este path com o seu, e esta diretoria tem que ter a pasta "fotos"
-#default_folder = 'C:/Users/andre/CP/TestFolder/' 
-#default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
-
+#Must Update SelectableImage file!!
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
@@ -50,7 +52,7 @@ class PicLib(App):
         self.image_display = None
         self.page_number = 1
         self.total_pages = 1
-        self.images_per_page =6  #25
+        self.images_per_page =6  #Default value
         self.page_label = None
         self.addedTags = []
         self.activeTags = []
@@ -89,15 +91,15 @@ class PicLib(App):
         top_row_label = Label(text='PicLib', font_size=40)
         self.top_row.add_widget(top_row_label)
 
-    def create_bottom_row(self):
+    def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel)
-        self.bottom_row_label = Label(text='Tags', color='#94FFDA', font_size=25, size_hint=(0.4, 1))
+        self.bottom_row_label = Label(text='Tags',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         self.bottom_row.add_widget(self.bottom_row_label)
 
-        prev_button = Button(text='<', font_size=20, background_color='#94FFDA', size_hint=(0.1, 0.99))
-        next_button = Button(text='>', font_size=20, background_color='#94FFDA', size_hint=(0.1, 0.99))
+        prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
         next_button.bind(on_press=self.go_to_next_page)
         self.bottom_row.add_widget(prev_button)
@@ -637,9 +639,9 @@ class PicLib(App):
         rows = min(rows, max_rows)
 
         image_index = start_index
+
         for i in range(rows):
             row_images = images_to_display[i * max_images_per_row:(i + 1) * max_images_per_row]
-
             row_layout = BoxLayout(orientation='horizontal', size_hint=(1, 1))
             for image_path in row_images:
                 image_index += 1
@@ -650,7 +652,6 @@ class PicLib(App):
 
             self.image_display.add_widget(row_layout)
             self.page_label.text = f'Page {self.page_number}'
-
 
     def on_image_selected(self, instance):
         # Perform actions when an image is selected
@@ -848,24 +849,3 @@ class PicLib(App):
 
 PicLib().run()
 
-
-"""Temos o layout das 3 caixas necessárias +1 classe para colocar cor na label,
-os botões das tags estão definidos no entanto
-acho que não temos o Save pretendido não sei se é o das tags ou não,
-nós temos o do self.filename no ImageCollection,
-falta-nos o Zip peço que confirmes sff e falta o Rotation90 degree,
-em relação ao bidding das imagens para darem showcase
-estava a pensar secalhar em grid?Para ficarem todas juntinhas
-sem ocupar diferentes tamanhos no main ficava mais clean
-no entanto não se dá para fazer como estou a pensar,
-aos botões vou lhes meter colors type HEX ou RGB, é mais universal
- i mean não é preciso fazer a divisão por 255 no entanto é irrelevante"""
-"""+T está a criar o popup para inserir o text input da nova tag a criar e 
-leva nos a um novo layout, ainda estou a tentar perceber como integrar os diferentes layouts
- visto que não estou a conseguir colocar widgets parentais e assim tenho mesmo de criar diferetnes layouts A,B,C,D
- a seleção de imagem continua a ser só possivel selecioanr 1,no entanto ainda não integrei o nosso PicLib 
- nem as collections que temos como output estou a utilizar apenas as imagens todas numa pasta porque
- queria testar a navegação entre paginas. Pata tal na utilização para adicionar as tags o novo layout funciona 
- até ao botão ok que aciona o popup para dar add à Tag mas o de voltar da crash a app"""
-"""Outra coisa, deves ter de instalar o sdl12 do kivy,
-(pip install "kivy[sdl2]") no terminal """
