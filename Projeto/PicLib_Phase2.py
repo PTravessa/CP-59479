@@ -100,7 +100,8 @@ class PicLib(App):
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel)
-        self.bottom_row_label = Label(text='Tags:',color='#94FFDA', font_size=25, size_hint=(0.4, 1))
+        self.bottom_row_label = Label(text="Tags: ", color='#94FFDA', font_size=25, size_hint=(0.4, 1))
+        self.update_bottom_row_label()
         self.bottom_row.add_widget(self.bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
@@ -399,11 +400,69 @@ class PicLib(App):
             #    print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
                zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
         popup.dismiss()
+    def setnewdate(self, btn):
+            """
+            Set's a newdate to the selected image (Not Writing in file, getDate() exifs mod)
+            """
+            def update_selected_images_date():
+                num_selected_images = len(SelectableImage.selected_images)
+                if num_selected_images >= 1:
+                    last_key = list(SelectableImage.selected_images.keys())[-1]
+                    selected_image = SelectableImage.selected_images[last_key]
+                    cur_img_date = selected_image.get_date()
+
+                    if cur_img_date == '':
+                        cur_img_date = 'NA'
+                    else:
+                        cur_img_date = cur_img_date[:10]
+
+                    new_date = f"{newyear.text}:{newmonth.text}:{newday.text}"
+                    new_date = cur_img_date.replace(cur_img_date[:10], new_date)
+
+                    selected_image.set_date(new_date)  # Set the new date for the selected image
+                    self.dateButton.text = "Date: " + new_date[:10]
+
+            def addday(textinput):
+                newday.focus = True
+                if len(textinput.text) == 1:
+                    textinput.text = '0' + textinput.text
+                textinput.text = textinput.text[:2]
+                update_selected_images_date()
+
+            def addmonth(textinput):
+                newmonth.focus = True
+                if len(textinput.text) == 1:
+                    textinput.text = '0' + textinput.text
+                textinput.text = textinput.text[:2]
+                update_selected_images_date() 
+
+            def addyear(textinput):
+                newyear.focus = True
+                textinput.text = textinput.text[:4]
+                update_selected_images_date() 
+
+            newday = TextInput(multiline=False, on_text_validate=addday)
+            newmonth = TextInput(multiline=False, on_text_validate=addmonth)
+            newyear = TextInput(multiline=False, on_text_validate=addyear)
+
+            def confirm_date(instance):
+                # Handle the confirmed date
+                print("Confirmed date:", newyear.text, newmonth.text, newday.text)
+                self.popup.dismiss()
+
+            content = BoxLayout(orientation='horizontal')
+            self.popup = Popup(title='Enter new Date (YYYY:MM:DD)', content=content, size_hint=(0.5, 0.2))
+            content.add_widget(newyear)
+            content.add_widget(newmonth)
+            content.add_widget(newday)
+
+            confirm_button = Button(text="Confirm", on_release=confirm_date)
+            content.add_widget(confirm_button)
+            self.popup.open()
 
     def create_date_label(self):
-        self.dateLabel = Label(text="Date: ", size_hint=(0.4, 1))
-        return self.dateLabel
-
+        self.dateButton = Button(text="Date: ", size_hint=(0.15, 0.99), on_press=self.setnewdate, background_color='#94FFDA')
+        return self.dateButton
 
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
@@ -841,16 +900,27 @@ class PicLib(App):
     def add_tags(self, tags, popup):
         # Perform actions to add tags to selected images
         addedTagsSet = set(self.addedTags)
-
         addedTagsSet.add(tags)
         self.addedTags = list(addedTagsSet)
         print(f"Tags: {tags}")
         print(self.addedTags)
+
         if self.tag_display in self.main_panel.children:
             self.main_panel.remove_widget(self.tag_display)
+
         self.tag_display = self.create_tag_display(tagList=self.addedTags)
         self.main_panel.add_widget(self.tag_display)
+
+        # Update the bottom row label with the tags
+        tag_text = "Tags: " + ", ".join(self.addedTags)
+        self.bottom_row_label.text = tag_text
+
         popup.dismiss()
+
+    def update_bottom_row_label(self):
+        # Update the bottom row label with the tags
+        tag_text = ", ".join(self.addedTags)
+        self.bottom_row_label.text = "Tags: " + tag_text
 
 PicLib().run()
 
