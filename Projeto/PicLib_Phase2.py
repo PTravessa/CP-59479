@@ -25,12 +25,14 @@ import random
 import math
 import copy
 
-#Data change button not available still
+#Date change button not writing in EXIF metadata
 #Tags are written in pictures but not in the library or tag collection 
+#(The Tag Collection should display all the tags presented in all pictures) 
 #Need Documentation from previous Final Version
 #Save collection in folder not zipped one
 #Tags not displaying
-#When clicking reset there's a bug that removes change images display and date
+#When clicking "OK" goes to a parent with no change img display and date button
+#When clicking "<" above Reset button it has the same problem plus removes the tags label
 
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
@@ -400,65 +402,79 @@ class PicLib(App):
             #    print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
                zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
         popup.dismiss()
+
+
+
     def setnewdate(self, btn):
-            """
-            Set's a newdate to the selected image (Not Writing in file, getDate() exifs mod)
-            """
-            def update_selected_images_date():
-                num_selected_images = len(SelectableImage.selected_images)
-                if num_selected_images >= 1:
-                    last_key = list(SelectableImage.selected_images.keys())[-1]
-                    selected_image = SelectableImage.selected_images[last_key]
-                    cur_img_date = selected_image.get_date()
+        """
+        Set a new date for the selected image (Modifying the image's EXIF metadata)
+        """
+        def update_selected_images_date():
+            num_selected_images = len(SelectableImage.selected_images)
+            if num_selected_images >= 1:
+                last_key = list(SelectableImage.selected_images.keys())[-1]
+                selected_image = SelectableImage.selected_images[last_key]
+                image_path = selected_image.image_source
 
-                    if cur_img_date == '':
-                        cur_img_date = 'NA'
-                    else:
-                        cur_img_date = cur_img_date[:10]
+                cur_img_date = selected_image.get_date()
 
-                    new_date = f"{newyear.text}:{newmonth.text}:{newday.text}"
-                    new_date = cur_img_date.replace(cur_img_date[:10], new_date)
+                if cur_img_date == '':
+                    cur_img_date = 'NA'
+                else:
+                    cur_img_date = cur_img_date[:10]
 
-                    selected_image.set_date(new_date)  # Set the new date for the selected image
-                    self.dateButton.text = "Date: " + new_date[:10]
+                new_date = f"{newyear.text}-{newmonth.text}-{newday.text}"
 
-            def addday(textinput):
-                newday.focus = True
-                if len(textinput.text) == 1:
-                    textinput.text = '0' + textinput.text
-                textinput.text = textinput.text[:2]
-                update_selected_images_date()
+                # Update the image metadata
+                try:
+                    image = Image.open(image_path)
+                    exif_data = image.info.get('exif', b'')
+                    exif_dict = piexif.load(exif_data)
+                    exif_dict['0th'][piexif.ImageIFD.DateTime] = new_date.encode('utf-8')
+                    exif_bytes = piexif.dump(exif_dict)
+                    image.save(image_path, "jpeg", exif=exif_bytes)
+                except (KeyError, AttributeError, ValueError, FileNotFoundError):
+                    print("Error: Failed to update image metadata.")
 
-            def addmonth(textinput):
-                newmonth.focus = True
-                if len(textinput.text) == 1:
-                    textinput.text = '0' + textinput.text
-                textinput.text = textinput.text[:2]
-                update_selected_images_date() 
+                self.update_selected_images_label()  # Update the label to reflect the new date
 
-            def addyear(textinput):
-                newyear.focus = True
-                textinput.text = textinput.text[:4]
-                update_selected_images_date() 
+        def addday(textinput):
+            newday.focus = True
+            if len(textinput.text) == 1:
+                textinput.text = '0' + textinput.text
+            textinput.text = textinput.text[:2]
+            update_selected_images_date()
 
-            newday = TextInput(multiline=False, on_text_validate=addday)
-            newmonth = TextInput(multiline=False, on_text_validate=addmonth)
-            newyear = TextInput(multiline=False, on_text_validate=addyear)
+        def addmonth(textinput):
+            newmonth.focus = True
+            if len(textinput.text) == 1:
+                textinput.text = '0' + textinput.text
+            textinput.text = textinput.text[:2]
+            update_selected_images_date()
 
-            def confirm_date(instance):
-                # Handle the confirmed date
-                print("Confirmed date:", newyear.text, newmonth.text, newday.text)
-                self.popup.dismiss()
+        def addyear(textinput):
+            newyear.focus = True
+            textinput.text = textinput.text[:4]
+            update_selected_images_date()
 
-            content = BoxLayout(orientation='horizontal')
-            self.popup = Popup(title='Enter new Date (YYYY:MM:DD)', content=content, size_hint=(0.5, 0.2))
-            content.add_widget(newyear)
-            content.add_widget(newmonth)
-            content.add_widget(newday)
+        newday = TextInput(multiline=False, on_text_validate=addday)
+        newmonth = TextInput(multiline=False, on_text_validate=addmonth)
+        newyear = TextInput(multiline=False, on_text_validate=addyear)
 
-            confirm_button = Button(text="Confirm", on_release=confirm_date)
-            content.add_widget(confirm_button)
-            self.popup.open()
+        def confirm_date(instance):
+            # Handle the confirmed date
+            print("Confirmed date:", newyear.text, newmonth.text, newday.text)
+            self.popup.dismiss()
+
+        content = BoxLayout(orientation='horizontal')
+        self.popup = Popup(title='Enter new Date (YYYY-MM-DD)', content=content, size_hint=(0.5, 0.2))
+        content.add_widget(newyear)
+        content.add_widget(newmonth)
+        content.add_widget(newday)
+
+        confirm_button = Button(text="Confirm", on_release=confirm_date)
+        content.add_widget(confirm_button)
+        self.popup.open()
 
     def create_date_label(self):
         self.dateButton = Button(text="Date: ", size_hint=(0.15, 0.99), on_press=self.setnewdate, background_color='#94FFDA')
