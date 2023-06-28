@@ -81,6 +81,7 @@ class PicLib(App):
         self.dateLabel = None
         self.reset_active_tags_button = None
         self.tagsInImages = set()
+        self.change_button = None
 
     def build(self):
         self.create_top_row()
@@ -119,14 +120,20 @@ class PicLib(App):
         self.bottom_row.add_widget(next_button)
 
         # Button to change images_per_page value
-        change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
-        change_button.bind(on_press=self.change_images_per_page)
-        self.bottom_row.add_widget(change_button)
+        self.change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
+        self.change_button.bind(on_press=self.change_images_per_page)
+        self.bottom_row.add_widget(self.change_button)
 
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel)
 
         return self.bottom_row
+    
+    def create_change_button(self):
+        # Button to change images_per_page value
+        self.change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
+        self.change_button.bind(on_press=self.change_images_per_page)
+        return self.change_button
     
     def add_pageIndex_prev_next_to_bottomRow(self):
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
@@ -171,6 +178,10 @@ class PicLib(App):
         popup.open()
 
     def update_selected_images_label(self):
+        if self.change_button not in self.bottom_row.children:
+            self.bottom_row.add_widget(self.change_button)
+        # self.create_change_button()
+
         self.bottom_row.remove_widget(self.dateLabel)
         self.dateLabel=self.create_date_label() #Updating dateLabel
         self.bottom_row.add_widget(self.dateLabel, index=0)
@@ -433,13 +444,25 @@ class PicLib(App):
         popup.open()
 
     def setDate(self, images, year, month, day, popup):
+        if len(day) == 1:
+            day = "0"+day
+        if len(day) == 0:
+            day = "00"
+        if len(month) == 1:
+            month = "0"+month
+        if len(month) == 0:
+            month = "00"
+        print(day)
+                
         date = year+":"+month+":"+day+" "+"00"+":00"+":00"
-        datetime.datetime(int(year), int(month), int(day)) 
+        datetime.datetime(year=int(year), month=int(month), day=int(day))
         for key in images.keys():
             selectableImg = images[key]
             print("attempted to set date \""+date+"\"")
             selectableImg.set_date(date)
             popup.dismiss()
+        self.update_image_display()
+        self.dateLabel.text = "Date: "+date
 
     def create_date_label(self):
         # if len(SelectableImage.selected_images) == 1:
@@ -479,7 +502,7 @@ class PicLib(App):
         self.images = self.load_images_from_folder(self.image_folder)
         self.original_images = self.load_images_from_folder(self.image_folder) #Backup images
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
-        self.update_image_display()
+        self.update_image_display(shuffle=True)
 
     def create_button_bar(self):
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
@@ -670,14 +693,15 @@ class PicLib(App):
                 self.get_image_names(fullPath)
         return self.imageNames
 
-    def update_image_display(self):
+    def update_image_display(self, shuffle=False): #Shuffle is false in all except first time 
         self.image_display.clear_widgets()
 
         start_index = (self.page_number - 1) * self.images_per_page
         end_index = self.page_number * self.images_per_page
         images_to_display = self.images[start_index:end_index]
 
-        random.shuffle(images_to_display)
+        if shuffle:
+            random.shuffle(images_to_display)
 
         if self.images_per_page >= 1 and self.images_per_page <= 5:
             max_images_per_row = 3
