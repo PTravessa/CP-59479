@@ -456,6 +456,14 @@ class PicLib(App):
         popup.open()
 
     def zip_files(self, images, zip_filename, zip_folder, popup):
+        """Zips files in a .zip
+
+        Args:
+            images (_type_): _description_
+            zip_filename (str): str of the zip filename 
+            zip_folder (str): 
+            popup (Popup): 
+        """
         # # Create a ZipFile Object
         if not zip_filename.endswith('.zip'):
             zip_filename += '.zip'
@@ -662,47 +670,6 @@ class PicLib(App):
             self.bottom_row.add_widget(self.bottom_row_label)
         self.add_pageIndex_prev_next_to_bottomRow()
 
-
-    # # def load_scene_w_tags(self, instance):
-    # #     self.main_panel.clear_widgets()
-    # #     self.button_bar.clear_widgets()
-    # #     self.button_bar = self.create_button_bar()
-    # #     self.main_panel.add_widget(self.button_bar)
-
-    # #     # self.main_panel.add_widget(self.button_bar)
-    # #     if self.reset_active_tags_button in self.button_bar.children:
-    # #         self.button_bar.remove_widget(self.reset_active_tags_button)
-    # #     self.main_panel.remove_widget(self.tag_display)
-    # #     self.main_panel.add_widget(self.image_display)
-
-
-    # #     self.get_image_names(self.image_folder)
-    # #     print("image_names = "+str(self.image_names))
-    # #     print("self.image_folder = "+str(self.image_folder))
-    # #     imagesWithTags = list()
-    # #     if len(self.activeTags) >= 1:
-    # #         for image in self.image_names:
-    # #             cpimage = CPImage(image, self.image_folder)
-    # #             for tag in self.activeTags:
-    # #                 if cpimage.hasTag(tag):
-    # #                     imagesWithTags.append(self.image_folder+"/"+image)
-    # #                     break
-    # #     else:
-    # #         for image in self.image_names:
-    # #             imagesWithTags.append(self.image_folder+"/"+image)
-    # #     self.images = imagesWithTags
-    # #     if len(self.activeTags) <=0:
-    # #         self.images = copy.deepcopy(self.original_images)
-    # #     print("Self.images= "+str(self.images))
-        
-    # #     self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
-    # #     self.update_image_display()
-    # #     # self.main_panel.add_widget(self.image_display)
-    # #     self.bottom_row.clear_widgets()
-    # #     self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
-    # #     self.bottom_row.add_widget(self.bottom_row_label)
-    # #     self.add_pageIndex_prev_next_to_bottomRow()
-
     def create_search_button(self):
         self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         self.search_button.bind(on_press=self.load_tags)
@@ -803,34 +770,16 @@ class PicLib(App):
         # Remove the existing buttons from the button bar
         self.button_bar.clear_widgets()
 
-        # Create the new buttons
         save_button = Button(text='+T', font_size=20, background_color='#94FFDA')
-        #delete_button = Button(text='-T', font_size=20, background_color='#94FFDA')
         cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
 
-        # Bind the new button actions
         save_button.bind(on_press=self.on_save_tags_button)
-        #delete_button.bind(on_press=self.on_del_tags_button)
         cancel_button.bind(on_press=self.on_cancel_tags_button)
 
-        # Add the new buttons to the button bar
         self.button_bar.add_widget(save_button)
-        #self.button_bar.add_widget(delete_button)
         self.button_bar.add_widget(cancel_button)
 
-        # Remove the image display
         self.main_panel.remove_widget(self.image_display)
-        #Get tags of each img
-        # allTagsInImgs = set()
-        # for img in SelectableImage.selected_images:
-        #     print("img.values() +")
-        #     filePath = list(img.values())[0].image_source.split("/")[-1]
-        #     folderPath = list(img.values())[0].image_source.split("/")[:-1]
-        #     folderPath = "/".join(folderPath)
-        #     # cpiImgs.append(CPImage(filePath, folderPath))
-        #     tagL = CPImage(filePath, folderPath).getTagsList()
-        #     for tag in tagL:
-        #         allTagsInImgs.add(tag)
         allTagsInImgs = list(self.addedTags)
 
         self.tag_display = self.create_tag_display(allTagsInImgs)
@@ -934,6 +883,7 @@ class PicLib(App):
         self.button_bar.add_widget(cancel_button)
 
     def del_tag(self, tag, popup):
+        """"""
         if tag not in self.addedTags:
             return
         self.addedTags.remove(tag)
@@ -979,11 +929,6 @@ class PicLib(App):
 
         popup.dismiss()
 
-    # def update_bottom_row_label(self):
-    #     # Update the bottom row label with the tags
-    #     tag_text = ", ".join(self.addedTags)
-    #     self.bottom_row_label.text = "Tags: " + tag_text
-
     def on_request_close(self, btn):
         content = BoxLayout(orientation = 'horizontal', spacing = '5')
         popup = Popup(title='Save Collection before leaving?', content = content, size_hint=(None, None), size=(600, 300))
@@ -997,6 +942,8 @@ class PicLib(App):
         return True
     
     def saveImgCol(self, btn):
+        """Saves the collection in a file
+        """
         images = self.images
         cpimgs = []
         for imagePath in images:
@@ -1005,7 +952,6 @@ class PicLib(App):
             cpimage = CPImage(filename, foldername)
             cpimgs.append(cpimage)
 
-        #ImageCollection Testing
         dir = default_folder+"/imageCollections/"
         if not os.path.isdir(dir):
             os.makedirs(dir)
@@ -1014,13 +960,11 @@ class PicLib(App):
         for cpimage in cpimgs:
             imgCol.registerItem(cpimage)
         imgCol.saveCollection()
-        # imgCol.registerItem(img2)
-        # imgCol.registerItem(image1)
-        # imgCol.registerItem(img3)
-        # imgCol.saveCollection()
         self.stop()
 
     def loadCol(self, collection):
+        """Loads the current Collection (Not implemented)
+        """
         files = []
         dir = default_folder+"/imageCollections/"
         if not os.path.isdir(dir):
@@ -1029,13 +973,11 @@ class PicLib(App):
         with open(dir+"imageCollection1.txt", "r") as outfile:
             s = outfile.read()
 
-        d = json.loads(s) #json dict
-        for d1 in d["items"][0]: #List containing sets including items -> items list of dicts
-            print("D1111111111111111111111111111111111111111111 : "+str(d1))
+        d = json.loads(s) 
+        for d1 in d["items"][0]:
             fileInList = d1["Image"]
             files.append(fileInList[0])
         self.images = files
         self.update_image_display()
-        return files
 
 PicLib().run()
