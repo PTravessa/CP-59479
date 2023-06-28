@@ -105,7 +105,7 @@ class ImageCollection(CPCollection):
                 cpImg = CPImage(file)
                 super().registerItem(cpImg)
         if jsonFiles == []:
-         raise Exception("No json files found in folder")
+            raise Exception("No json files found in folder")
 
 
 
@@ -216,6 +216,7 @@ class CPImage(Serializable):
         print(fileNames)
         print(year)
         if not os.path.isdir(newPath): #If there is no year album, create one
+            print("newPath is "+newPath)
             os.makedirs(newPath)
         if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
             shutil.copy(cpImage.dirPath+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
@@ -502,6 +503,7 @@ albumDir = "C:/Users/andre/CP/Album/"
 imageColDir = "C:/Users/andre/CP/ImageCollections/"
 
 from PicLib_Phase2 import default_folder
+# default_folder = "C:/Users/andre/CP/"
 AnaLibanoDir = default_folder+"/fotos/AnaLibano/"
 fotoDir = default_folder+"/fotos/"
 collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
@@ -532,6 +534,9 @@ image1 = CPImage(fl[16], AnaLibanoDir)
 image1.addTag("TestTag1")
 image1.addTag("TestTag5")
 img2 = CPImage(fl[4], AnaLibanoDir)
+img3 = CPImage(fl[5], AnaLibanoDir)
+img3.addTag("TestTag5")
+img3.addTag("TestTag7")
 img2.addTag("TestTag5")
 
 print("\n "+str(image1.__dict__))
@@ -549,7 +554,12 @@ print("\n img2 exif tags "+str(img2.getTags()))
 imgCol = ImageCollection("imageCollection1.txt", [image1], "C:/Users/andre/CP/ImageCollections/")
 imgCol.registerItem(img2)
 imgCol.registerItem(image1)
+imgCol.registerItem(img3)
 imgCol.saveCollection()
+
+print("LoadingCol")
+imgCol.loadCollection()
+print("Ended LoadingCol")
 
 image1.copyToFolder(collectionDir)
 
@@ -562,3 +572,7 @@ img2.addTag("TestTag5")
 print(img2.getTagsList())
 img2.removeTag("")
 print(img2.getTagsList())
+
+print("LoadingCol")
+imgCol.loadCollection()
+print("Ended LoadingCol")

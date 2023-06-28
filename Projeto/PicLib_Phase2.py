@@ -6,6 +6,7 @@ Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
 """
 from PicLib_Phase1 import * #Must change the path for os.listdir
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
@@ -25,6 +26,7 @@ import random
 import math
 import copy
 import datetime
+
 
 #Date change button not writing in EXIF metadata
 #Tags are written in pictures but not in the library or tag collection 
@@ -82,6 +84,7 @@ class PicLib(App):
         self.reset_active_tags_button = None
         self.tagsInImages = set()
         self.change_button = None
+        self.loadColButton = None
 
     def build(self):
         self.create_top_row()
@@ -92,8 +95,24 @@ class PicLib(App):
         main_layout.add_widget(self.top_row)
         main_layout.add_widget(self.main_panel)
         main_layout.add_widget(self.bottom_row)
+        self.loadColButton = self.create_loadColButton()
+        main_layout.add_widget(self.loadColButton)
+
+        Window.bind(on_request_close = self.on_request_close)
 
         return main_layout
+    
+    def on_request_close(self, btn):
+        content = BoxLayout(orientation = 'horizontal', spacing = '5')
+        popup = Popup(title='Save Collection before leaving?', content = content, size_hint=(None, None), size=(600, 300))
+        btn2 = Button(text='Yes', size_hint=(1, 0.25), on_release = self.saveImgCol)
+        btn1 = Button(text='No', size_hint=(1, 0.25), on_release = self.stop)
+        
+        content.add_widget(btn2)
+        content.add_widget(btn1)
+
+        popup.open()
+        return True
 
     def create_top_row(self): #Toprow with a label, and a widget with it inside
         self.top_row = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
@@ -103,7 +122,8 @@ class PicLib(App):
     def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.bottom_row_label = Label(text="Tags: ", color='#94FFDA', font_size=25, size_hint=(0.4, 1))
-        self.update_bottom_row_label()
+        # self.update_bottom_row_label()
+        self.updateBottomLabelTags()
         self.bottom_row.add_widget(self.bottom_row_label)
 
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
@@ -125,10 +145,15 @@ class PicLib(App):
         self.bottom_row.add_widget(self.change_button)
 
         self.dateLabel = self.create_date_label()
-        self.bottom_row.add_widget(self.dateLabel)
+        self.bottom_row.add_widget(self.dateLabel, index=-1)
 
         return self.bottom_row
     
+    def create_loadColButton(self):
+        self.loadColButton = Button(text="Load previous collection")
+        self.loadColButton.bind(on_press=self.loadCol)
+        return self.loadColButton
+
     def create_change_button(self):
         # Button to change images_per_page value
         self.change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
@@ -184,16 +209,23 @@ class PicLib(App):
 
         self.bottom_row.remove_widget(self.dateLabel)
         self.dateLabel=self.create_date_label() #Updating dateLabel
-        self.bottom_row.add_widget(self.dateLabel, index=0)
+        self.bottom_row.add_widget(self.dateLabel, index=-1)
         num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
         cur_img_date = ''
+
+        self.updateBottomLabelTags()
+
         if num_selected_images >= 1:
             lastKey = list(SelectableImage.selected_images.keys())[-1]
             cur_img_date = SelectableImage.selected_images[lastKey].get_date()
             if cur_img_date == '':
                 cur_img_date = 'NA'
             else: cur_img_date = cur_img_date[0:10]
+
+        if num_selected_images == 1:
+            if not self.bottom_row_label in self.bottom_row.children:
+                self.bottom_row.add_widget(self.bottom_row_label, index=-1)
         
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
             # if self.dateLabel not in self.bottom_row.children:
@@ -234,6 +266,23 @@ class PicLib(App):
             if self.add_tag_img_button in self.button_bar.children:
                 self.button_bar.remove_widget(self.add_tag_img_button)
             # self.button_bar.remove_widget(self.remove_tags_button)
+
+    def updateBottomLabelTags(self):
+        """Returns a label with the selected image tags
+
+        Returns:
+            set: tags
+        """
+        tags = []
+        if SelectableImage.selected_images != [] and len(SelectableImage.selected_images) == 1:
+            for key in SelectableImage.selected_images.keys():
+                tags = SelectableImage.selected_images[key].get_all_tags()
+                # allTags = allTags.intersection(tags)
+        s = str(tags)
+        s = "Tags: " + s
+
+        self.bottom_row_label.text = s
+        return self.bottom_row_label 
 
     def add_zip_and_rot_to_buttonBar(self):
         self.create_zip_button()
@@ -452,35 +501,29 @@ class PicLib(App):
             month = "0"+month
         if len(month) == 0:
             month = "00"
-        print(day)
                 
         date = year+":"+month+":"+day+" "+"00"+":00"+":00"
         datetime.datetime(year=int(year), month=int(month), day=int(day))
         for key in images.keys():
             selectableImg = images[key]
-            print("attempted to set date \""+date+"\"")
             selectableImg.set_date(date)
             popup.dismiss()
         self.update_image_display()
         self.dateLabel.text = "Date: "+date
 
     def create_date_label(self):
-        # if len(SelectableImage.selected_images) == 1:
         image = None
         for key in SelectableImage.selected_images:
             image = SelectableImage.selected_images[key]
         print("len(SelectableImage.selected_images) == 1")
         if image is not None:
             if len(SelectableImage.selected_images) == 1:
-                self.dateLabel = Button(text="Date: "+image.cpimage.getDate(), size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA')
+                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=20)
             else:
-                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
+                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
         else:
-            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
+            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
 
-        # else:
-        #     print("len(SelectableImage.selected_images) is not 1")
-        #     self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
         return self.dateLabel
 
     def create_main_panel(self):
@@ -496,7 +539,7 @@ class PicLib(App):
         # Load and display images from folder
         # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
         # self.image_folder = 'C:/Users/andre/CP/fotos/'
-        self.image_folder = default_folder #+"fotos/"
+        self.image_folder = default_folder 
         if not os.path.isdir(self.image_folder):
             os.mkdir(self.image_folder)
         self.images = self.load_images_from_folder(self.image_folder)
@@ -616,50 +659,51 @@ class PicLib(App):
         self.update_image_display()
         # self.main_panel.add_widget(self.image_display)
         self.bottom_row.clear_widgets()
-        self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
-        self.bottom_row.add_widget(self.bottom_row_label)
+        # self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
+        if self.bottom_row_label not in self.bottom_row.children:
+            self.bottom_row.add_widget(self.bottom_row_label)
         self.add_pageIndex_prev_next_to_bottomRow()
 
 
-    def load_scene_w_tags(self, instance):
-        self.main_panel.clear_widgets()
-        self.button_bar.clear_widgets()
-        self.button_bar = self.create_button_bar()
-        self.main_panel.add_widget(self.button_bar)
+    # # def load_scene_w_tags(self, instance):
+    # #     self.main_panel.clear_widgets()
+    # #     self.button_bar.clear_widgets()
+    # #     self.button_bar = self.create_button_bar()
+    # #     self.main_panel.add_widget(self.button_bar)
 
-        # self.main_panel.add_widget(self.button_bar)
-        if self.reset_active_tags_button in self.button_bar.children:
-            self.button_bar.remove_widget(self.reset_active_tags_button)
-        self.main_panel.remove_widget(self.tag_display)
-        self.main_panel.add_widget(self.image_display)
+    # #     # self.main_panel.add_widget(self.button_bar)
+    # #     if self.reset_active_tags_button in self.button_bar.children:
+    # #         self.button_bar.remove_widget(self.reset_active_tags_button)
+    # #     self.main_panel.remove_widget(self.tag_display)
+    # #     self.main_panel.add_widget(self.image_display)
 
 
-        self.get_image_names(self.image_folder)
-        print("image_names = "+str(self.image_names))
-        print("self.image_folder = "+str(self.image_folder))
-        imagesWithTags = list()
-        if len(self.activeTags) >= 1:
-            for image in self.image_names:
-                cpimage = CPImage(image, self.image_folder)
-                for tag in self.activeTags:
-                    if cpimage.hasTag(tag):
-                        imagesWithTags.append(self.image_folder+"/"+image)
-                        break
-        else:
-            for image in self.image_names:
-                imagesWithTags.append(self.image_folder+"/"+image)
-        self.images = imagesWithTags
-        if len(self.activeTags) <=0:
-            self.images = copy.deepcopy(self.original_images)
-        print("Self.images= "+str(self.images))
+    # #     self.get_image_names(self.image_folder)
+    # #     print("image_names = "+str(self.image_names))
+    # #     print("self.image_folder = "+str(self.image_folder))
+    # #     imagesWithTags = list()
+    # #     if len(self.activeTags) >= 1:
+    # #         for image in self.image_names:
+    # #             cpimage = CPImage(image, self.image_folder)
+    # #             for tag in self.activeTags:
+    # #                 if cpimage.hasTag(tag):
+    # #                     imagesWithTags.append(self.image_folder+"/"+image)
+    # #                     break
+    # #     else:
+    # #         for image in self.image_names:
+    # #             imagesWithTags.append(self.image_folder+"/"+image)
+    # #     self.images = imagesWithTags
+    # #     if len(self.activeTags) <=0:
+    # #         self.images = copy.deepcopy(self.original_images)
+    # #     print("Self.images= "+str(self.images))
         
-        self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
-        self.update_image_display()
-        # self.main_panel.add_widget(self.image_display)
-        self.bottom_row.clear_widgets()
-        self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
-        self.bottom_row.add_widget(self.bottom_row_label)
-        self.add_pageIndex_prev_next_to_bottomRow()
+    # #     self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+    # #     self.update_image_display()
+    # #     # self.main_panel.add_widget(self.image_display)
+    # #     self.bottom_row.clear_widgets()
+    # #     self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
+    # #     self.bottom_row.add_widget(self.bottom_row_label)
+    # #     self.add_pageIndex_prev_next_to_bottomRow()
 
     def create_search_button(self):
         self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
@@ -937,10 +981,66 @@ class PicLib(App):
 
         popup.dismiss()
 
-    def update_bottom_row_label(self):
-        # Update the bottom row label with the tags
-        tag_text = ", ".join(self.addedTags)
-        self.bottom_row_label.text = "Tags: " + tag_text
+    # def update_bottom_row_label(self):
+    #     # Update the bottom row label with the tags
+    #     tag_text = ", ".join(self.addedTags)
+    #     self.bottom_row_label.text = "Tags: " + tag_text
+
+    def on_request_close(self, btn):
+        content = BoxLayout(orientation = 'horizontal', spacing = '5')
+        popup = Popup(title='Save Collection before leaving?', content = content, size_hint=(None, None), size=(600, 300))
+        btn2 = Button(text='Yes', size_hint=(1, 0.25), on_release = self.saveImgCol)
+        btn1 = Button(text='No', size_hint=(1, 0.25), on_release = self.stop)
+        
+        content.add_widget(btn2)
+        content.add_widget(btn1)
+
+        popup.open()
+        return True
+
+    def quitApp(self):
+        self.stop()
+
+    def saveImgCol(self, btn):
+        images = self.images
+        cpimgs = []
+        for imagePath in images:
+            foldername = "/".join(imagePath.split('/')[:-1]) 
+            filename = imagePath.split('/')[-1]
+            cpimage = CPImage(filename, foldername)
+            cpimgs.append(cpimage)
+
+        #ImageCollection Testing
+        dir = default_folder+"/imageCollections/"
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+        imgCol = ImageCollection("imageCollection1.txt", [], dir)
+        
+        for cpimage in cpimgs:
+            imgCol.registerItem(cpimage)
+        imgCol.saveCollection()
+        # imgCol.registerItem(img2)
+        # imgCol.registerItem(image1)
+        # imgCol.registerItem(img3)
+        # imgCol.saveCollection()
+        self.stop()
+
+    def loadCol(self, collection):
+        files = []
+        collection = ImageCollection()
+        dir = default_folder+"/imageCollections/"
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+        s = ""
+        with open(dir+"imageCollection1", "r") as outfile:
+            s = outfile.read(outfile)
+
+        d = json.loads(s) #json dict
+        for d1 in d["items"][0]: #List containing sets including items -> items list of dicts
+            fileInList = d1["Image"]
+            files.append(fileInList[0])
+        self.images = files
+        self.update_image_display()
+        return files
 
 PicLib().run()
-
