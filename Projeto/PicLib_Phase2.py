@@ -27,16 +27,6 @@ import math
 import copy
 import datetime
 
-
-#Date change button not writing in EXIF metadata
-#Tags are written in pictures but not in the library or tag collection 
-#(The Tag Collection should display all the tags presented in all pictures) 
-#Need Documentation from previous Final Version
-#Save collection in folder not zipped one
-#Tags not displaying
-#When clicking "OK" goes to a parent with no change img display and date button
-#When clicking "<" above Reset button it has the same problem plus removes the tags label
-
 # User Example
 default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
 
@@ -101,6 +91,9 @@ class PicLib(App):
         return main_layout
     
     def on_request_close(self, btn):
+        """
+        This function is called when the user clicks close button in window
+        """
         content = BoxLayout(orientation = 'horizontal', spacing = '5')
         popup = Popup(title='Save Collection before leaving?', content = content, size_hint=(None, None), size=(600, 300))
         btn2 = Button(text='Yes', size_hint=(1, 0.25), on_release = self.saveImgCol)
@@ -117,7 +110,10 @@ class PicLib(App):
         top_row_label = Label(text='PicLib', font_size=40)
         self.top_row.add_widget(top_row_label)
 
-    def create_bottom_row(self): #Has label, functional~ prev next buttons, 
+    def create_bottom_row(self):
+        """
+        Creates bottom row of UI (with page numbering etc.)
+        """ 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         self.bottom_row_label = Label(text="Tags: ", color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         # self.update_bottom_row_label()
@@ -159,6 +155,9 @@ class PicLib(App):
         return self.change_button
     
     def add_pageIndex_prev_next_to_bottomRow(self):
+        """
+        Add page number and buttons for going back/forward in pages list
+        """
         prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
@@ -439,7 +438,6 @@ class PicLib(App):
 
         self.update_image_display()
 
-
     def zip_files_popup(self, images):
         # Create a popup with a text input for adding tags
         popup_content = BoxLayout(orientation='vertical', padding=10)
@@ -533,6 +531,9 @@ class PicLib(App):
         return self.dateLabel
 
     def create_main_panel(self):
+        """
+        Creates Main Panel Layout
+        """
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
         button_bar = self.create_button_bar()
         image_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
@@ -554,6 +555,9 @@ class PicLib(App):
         self.update_image_display(shuffle=True)
 
     def create_button_bar(self):
+        """
+        Creates Button Bar Layout
+        """
         self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
         self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
 
@@ -883,7 +887,6 @@ class PicLib(App):
         self.button_bar.add_widget(cancel_button)
 
     def del_tag(self, tag, popup):
-        """"""
         if tag not in self.addedTags:
             return
         self.addedTags.remove(tag)
@@ -942,7 +945,8 @@ class PicLib(App):
         return True
     
     def saveImgCol(self, btn):
-        """Saves the collection in a file
+        """
+        Saves the collection in a file
         """
         images = self.images
         cpimgs = []
