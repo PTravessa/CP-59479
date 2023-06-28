@@ -24,6 +24,7 @@ from FolderSelectionPopup import *
 import random
 import math
 import copy
+import datetime
 
 #Date change button not writing in EXIF metadata
 #Tags are written in pictures but not in the library or tag collection 
@@ -100,8 +101,6 @@ class PicLib(App):
 
     def create_bottom_row(self): #Has label, functional~ prev next buttons, 
         self.bottom_row = BrownBoxLayout(orientation='horizontal', size_hint=(1, 0.1))
-        self.dateLabel = self.create_date_label()
-        self.bottom_row.add_widget(self.dateLabel)
         self.bottom_row_label = Label(text="Tags: ", color='#94FFDA', font_size=25, size_hint=(0.4, 1))
         self.update_bottom_row_label()
         self.bottom_row.add_widget(self.bottom_row_label)
@@ -123,6 +122,9 @@ class PicLib(App):
         change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
         change_button.bind(on_press=self.change_images_per_page)
         self.bottom_row.add_widget(change_button)
+
+        self.dateLabel = self.create_date_label()
+        self.bottom_row.add_widget(self.dateLabel)
 
         return self.bottom_row
     
@@ -169,6 +171,9 @@ class PicLib(App):
         popup.open()
 
     def update_selected_images_label(self):
+        self.bottom_row.remove_widget(self.dateLabel)
+        self.dateLabel=self.create_date_label() #Updating dateLabel
+        self.bottom_row.add_widget(self.dateLabel, index=0)
         num_selected_images = len((SelectableImage.selected_images))
         self.selected_images_label.text = f'Selected: {num_selected_images}'
         cur_img_date = ''
@@ -178,9 +183,15 @@ class PicLib(App):
             if cur_img_date == '':
                 cur_img_date = 'NA'
             else: cur_img_date = cur_img_date[0:10]
-        self.dateLabel.text = "Date: " + cur_img_date
         
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
+            # if self.dateLabel not in self.bottom_row.children:
+            #     self.bottom_row.add_widget(self.dateLabel)
+            # else:
+            #     self.bottom_row.remove_widget(self.dateLabel) 
+            #     self.dateLabel = self.create_date_label()
+            #     self.bottom_row.add_widget(self.dateLabel, index=0)
+            
             if not self.zip_button in self.button_bar.children:
                 self.button_bar.add_widget(self.create_zip_button())
             if not self.rotate_button in self.button_bar.children:
@@ -403,82 +414,51 @@ class PicLib(App):
                zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
         popup.dismiss()
 
-
-
-    def setnewdate(self, btn):
-        """
-        Set a new date for the selected image (Modifying the image's EXIF metadata)
-        """
-        def update_selected_images_date():
-            num_selected_images = len(SelectableImage.selected_images)
-            if num_selected_images >= 1:
-                last_key = list(SelectableImage.selected_images.keys())[-1]
-                selected_image = SelectableImage.selected_images[last_key]
-                image_path = selected_image.image_source
-
-                cur_img_date = selected_image.get_date()
-
-                if cur_img_date == '':
-                    cur_img_date = 'NA'
-                else:
-                    cur_img_date = cur_img_date[:10]
-
-                new_date = f"{newyear.text}-{newmonth.text}-{newday.text}"
-
-                # Update the image metadata
-                try:
-                    image = Image.open(image_path)
-                    exif_data = image.info.get('exif', b'')
-                    exif_dict = piexif.load(exif_data)
-                    exif_dict['0th'][piexif.ImageIFD.DateTime] = new_date.encode('utf-8')
-                    exif_bytes = piexif.dump(exif_dict)
-                    image.save(image_path, "jpeg", exif=exif_bytes)
-                except (KeyError, AttributeError, ValueError, FileNotFoundError):
-                    print("Error: Failed to update image metadata.")
-
-                self.update_selected_images_label()  # Update the label to reflect the new date
-
-        def addday(textinput):
-            newday.focus = True
-            if len(textinput.text) == 1:
-                textinput.text = '0' + textinput.text
-            textinput.text = textinput.text[:2]
-            update_selected_images_date()
-
-        def addmonth(textinput):
-            newmonth.focus = True
-            if len(textinput.text) == 1:
-                textinput.text = '0' + textinput.text
-            textinput.text = textinput.text[:2]
-            update_selected_images_date()
-
-        def addyear(textinput):
-            newyear.focus = True
-            textinput.text = textinput.text[:4]
-            update_selected_images_date()
-
-        newday = TextInput(multiline=False, on_text_validate=addday)
-        newmonth = TextInput(multiline=False, on_text_validate=addmonth)
-        newyear = TextInput(multiline=False, on_text_validate=addyear)
-
-        def confirm_date(instance):
-            # Handle the confirmed date
-            print("Confirmed date:", newyear.text, newmonth.text, newday.text)
-            self.popup.dismiss()
-
+    def setNewDate(self, btn):
+        last_key = list(SelectableImage.selected_images.keys())[-1]
+        image = SelectableImage.selected_images[last_key]
         content = BoxLayout(orientation='horizontal')
-        self.popup = Popup(title='Enter new Date (YYYY-MM-DD)', content=content, size_hint=(0.5, 0.2))
-        content.add_widget(newyear)
-        content.add_widget(newmonth)
-        content.add_widget(newday)
+        popup = Popup(title='Enter new Date (DD-MM-YYYY)', content=content, size_hint=(0.5, 0.2))
 
-        confirm_button = Button(text="Confirm", on_release=confirm_date)
+        newday = TextInput(multiline=False, hint_text="Insert day")
+        newmonth = TextInput(multiline=False, hint_text="Insert month")
+        newyear = TextInput(multiline=False, hint_text="Insert year")        
+        content.add_widget(newday)
+        content.add_widget(newmonth)
+        content.add_widget(newyear)
+        confirm_button = Button(text="Confirm")
+        # date = str(newyear.text)+str(newmonth.text)+str(newday.text)+"00"+"00"+"00"
+        confirm_button.bind(on_press=lambda *args: self.setDate(SelectableImage.selected_images, newyear.text, newmonth.text, newday.text, popup))
         content.add_widget(confirm_button)
-        self.popup.open()
+        popup.open()
+
+    def setDate(self, images, year, month, day, popup):
+        date = year+":"+month+":"+day+" "+"00"+":00"+":00"
+        datetime.datetime(int(year), int(month), int(day)) 
+        for key in images.keys():
+            selectableImg = images[key]
+            print("attempted to set date \""+date+"\"")
+            selectableImg.set_date(date)
+            popup.dismiss()
 
     def create_date_label(self):
-        self.dateButton = Button(text="Date: ", size_hint=(0.15, 0.99), on_press=self.setnewdate, background_color='#94FFDA')
-        return self.dateButton
+        # if len(SelectableImage.selected_images) == 1:
+        image = None
+        for key in SelectableImage.selected_images:
+            image = SelectableImage.selected_images[key]
+        print("len(SelectableImage.selected_images) == 1")
+        if image is not None:
+            if len(SelectableImage.selected_images) == 1:
+                self.dateLabel = Button(text="Date: "+image.cpimage.getDate(), size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA')
+            else:
+                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
+        else:
+            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
+
+        # else:
+        #     print("len(SelectableImage.selected_images) is not 1")
+        #     self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA')
+        return self.dateLabel
 
     def create_main_panel(self):
         self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))

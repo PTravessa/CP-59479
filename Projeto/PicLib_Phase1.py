@@ -278,6 +278,24 @@ class CPImage(Serializable):
             # print("On datetime")
             image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
             image.close()
+
+        else:
+            # image = Image.open(self.dirPath+"/"+self.imageFile)
+            # i = etag.index("DateTime")
+            # self.exif[etagId[i]] = date
+            # # print("On datetime")
+            # image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
+            # image.close()
+
+            img = Image.open(self.dirPath+"/"+self.imageFile)
+        
+            TAG_ID = 0x0132
+            if "DateTime" not in etag:
+                tempD = {TAG_ID: date}
+                self.exif[TAG_ID] = json.dumps(tempD[TAG_ID], ensure_ascii=False)
+                self.exif[TAG_ID] = str(self.exif[TAG_ID]).replace("\"", "")
+                img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
+                img.close()
     
     def getImageFile(self):
         """

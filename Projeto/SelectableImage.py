@@ -33,6 +33,10 @@ class SelectableImage(CheckBox, ButtonBehavior):
 
     def get_date(self):
         return self.cpimage.getDate()
+    
+    def set_date(self, date):
+        self.cpimage.setDate(date)
+        print("New date cpimage= "+str(self.cpimage.getDate()))
 
     def rotate(self):
         # im = Image.open(self.getImagefile())
