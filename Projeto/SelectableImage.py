@@ -34,6 +34,9 @@ class SelectableImage(CheckBox, ButtonBehavior):
     def get_date(self):
         return self.cpimage.getDate()
     
+    def get_all_tags(self):
+        return self.cpimage.getTagsList()
+    
     def set_date(self, date):
         self.cpimage.setDate(date)
         print("New date cpimage= "+str(self.cpimage.getDate()))

@@ -95,8 +95,6 @@ class PicLib(App):
         main_layout.add_widget(self.top_row)
         main_layout.add_widget(self.main_panel)
         main_layout.add_widget(self.bottom_row)
-        self.loadColButton = self.create_loadColButton()
-        main_layout.add_widget(self.loadColButton)
 
         Window.bind(on_request_close = self.on_request_close)
 
@@ -997,10 +995,7 @@ class PicLib(App):
 
         popup.open()
         return True
-
-    def quitApp(self):
-        self.stop()
-
+    
     def saveImgCol(self, btn):
         images = self.images
         cpimgs = []
@@ -1027,16 +1022,16 @@ class PicLib(App):
 
     def loadCol(self, collection):
         files = []
-        collection = ImageCollection()
         dir = default_folder+"/imageCollections/"
         if not os.path.isdir(dir):
             os.makedirs(dir)
         s = ""
-        with open(dir+"imageCollection1", "r") as outfile:
-            s = outfile.read(outfile)
+        with open(dir+"imageCollection1.txt", "r") as outfile:
+            s = outfile.read()
 
         d = json.loads(s) #json dict
         for d1 in d["items"][0]: #List containing sets including items -> items list of dicts
+            print("D1111111111111111111111111111111111111111111 : "+str(d1))
             fileInList = d1["Image"]
             files.append(fileInList[0])
         self.images = files
