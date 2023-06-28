@@ -530,7 +530,7 @@ for filename in os.listdir(AnaLibanoDir):
         # print(filename)
         fl.append(filename)
 
-image1 = CPImage(fl[16], AnaLibanoDir)
+"""image1 = CPImage(fl[16], AnaLibanoDir)
 image1.addTag("TestTag1")
 image1.addTag("TestTag5")
 img2 = CPImage(fl[4], AnaLibanoDir)
@@ -575,4 +575,4 @@ print(img2.getTagsList())
 
 print("LoadingCol")
 imgCol.loadCollection()
-print("Ended LoadingCol")
+print("Ended LoadingCol")"""
