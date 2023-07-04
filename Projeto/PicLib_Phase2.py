@@ -140,12 +140,14 @@ class PicLib(App):
 
         self.dateLabel = self.create_date_label()
         self.bottom_row.add_widget(self.dateLabel, index=-1)
+        self.create_loadColButton()
+        self.bottom_row.add_widget(self.loadColButton)
 
         return self.bottom_row
     
     def create_loadColButton(self):
         self.loadColButton = Button(text="Load previous collection")
-        self.loadColButton.bind(on_press=self.loadCol)
+        self.loadColButton.bind(on_press=self.loadCol1)
         return self.loadColButton
 
     def create_change_button(self):
@@ -979,6 +981,32 @@ class PicLib(App):
             files.append(fileInList[0])
         self.images = files
         self.update_image_display()
+
+    def loadCol1(self, collection):
+        """Loads the current Collection (Not implemented)
+        """
+        files = []
+        dir = default_folder+"/imageCollections/"
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+        s = ""
+        with open(dir+"imageCollection1.txt", "r") as outfile:
+            s = outfile.read()
+
+        data = json.loads(s)
+
+        filename = data["filename"]
+        items = data["items"]
+
+        print("ImageCollection filename:", filename)
+        print("Number Of Items", len(items))
+
+        for item in items:
+            image = item["Image"][0]
+            tags = item["tags"][0]
+            print("Image:", image)
+            print("Tags:", tags)
+
 
     def open_folder_selection_popup(self, instance):
         default_folder = os.getcwd()
