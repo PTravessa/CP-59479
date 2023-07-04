@@ -12,7 +12,7 @@ default_folder = input("Enter the default path folder: ")
 if not os.path.exists(default_folder):
     default_folder = os.getcwd()
 
-fotoDir = default_folder+"/fotos/"
+fotoDir = default_folder
 collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
 albumDir = default_folder+"/Album/"
 imageColDir = default_folder+"/ImageCollections/"
