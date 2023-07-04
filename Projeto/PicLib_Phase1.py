@@ -41,7 +41,7 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items, dirPath=default_folder + '/DefCPCollection'):
+    def __init__(self, filename, items, dirPath=defaultCollectionDir):
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -210,20 +210,33 @@ class CPImage(Serializable):
     @staticmethod
     def makeAllCPImages(dirPath, newDirPath):
         images = CPImage.getAllImages(dirPath)
+        counter = 0
         for image in images:
             filename = str(image.split("\\")[-1])
             foldername = "/".join(image.split("\\")[:-1])
-            CPImage.makeCPImage(filename, foldername, newDirPath)
+            a = CPImage.makeCPImage(filename, foldername, newDirPath)
+            print("COUNTER = "+str(counter))
+            print("Date cpimage is "+str(a.getDate()))
+            counter+=1
 
     @staticmethod
     def makeCPImage(filename, dir_path, newDirPath):
         if not os.path.exists(dir_path+"/"+filename):
             print("The image has to exist in the specified folder")
-            return 
+            return None
         cpImage = CPImage(filename, dir_path)
         date = cpImage.getDate()
         if date == "":
-            return
+            newPath = newDirPath+"/No date/"
+            if not os.path.isdir(newPath): #If there is no year album, create one
+                print("newPath is "+newPath)
+                os.makedirs(newPath)
+            if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
+                shutil.copy(cpImage.dirPath+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
+            else:
+                print("Image file already in folder") 
+            return CPImage(cpImage.imageFile, newPath)
+        
         date = date.split(":")
         year = date[0]
         month = date[1]
