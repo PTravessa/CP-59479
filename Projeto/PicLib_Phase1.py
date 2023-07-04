@@ -8,7 +8,9 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import piexif #For adding a new tag to a jpg's exif
 
-default_folder= os.getcwd()
+default_folder = input("Enter the default path folder: ")
+if not os.path.exists(default_folder):
+    default_folder = os.getcwd()
 class Serializable:
     def toJson(self, classInstance):
         #__dict__ contains attribute values of an object, show as a dictionary

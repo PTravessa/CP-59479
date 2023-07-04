@@ -5,6 +5,7 @@ FC60919 and FC59479 \
 # Project Part 1: 
 *PicLib_Phase1.py* \
 Creates a library enables you to create a collection based on the images given by the desired folder. \
+It will be asked for a path to the respective folder before running, if the path isn't valid it will assume as correct path the current working directory. \
 It creates a named folder "Album" in your directory with the images ordered by Date.
 # Project Part 2: 
 *PicLib_Phase2.py* \
