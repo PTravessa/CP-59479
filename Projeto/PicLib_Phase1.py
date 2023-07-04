@@ -11,6 +11,24 @@ import piexif #For adding a new tag to a jpg's exif
 default_folder = input("Enter the default path folder: ")
 if not os.path.exists(default_folder):
     default_folder = os.getcwd()
+
+fotoDir = default_folder+"/fotos/"
+collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+albumDir = default_folder+"/Album/"
+imageColDir = default_folder+"/ImageCollections/"
+defaultCollectionDir = default_folder + '/DefCPCollection'
+
+images = []
+
+if not os.path.isdir(fotoDir):
+    os.makedirs(fotoDir)
+if not os.path.isdir(collectionDir):    
+    os.makedirs(collectionDir)
+if not os.path.isdir(albumDir):    
+    os.makedirs(albumDir)
+if not os.path.isdir(imageColDir):    
+    os.makedirs(imageColDir)
+
 class Serializable:
     def toJson(self, classInstance):
         #__dict__ contains attribute values of an object, show as a dictionary
@@ -476,6 +494,24 @@ class CPImage(Serializable):
             return l
         else:
             return []
+        
+    @staticmethod
+    def countFilesInFolders(folder_path):
+        """Returns the number of png and jpeg files in folder with sub-folders
+
+        Args:
+            folder_path (str)
+
+        Returns:
+            _int_: number of files
+        """
+        for filename in os.listdir(folder_path):
+            fullPath = folder_path +"/"+ filename
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                images.append(fullPath)
+            elif os.path.isdir(fullPath):
+                CPImage.countFilesInFolders(fullPath)
+        return len(images)
 
         
 class Tag(Serializable):
@@ -498,19 +534,23 @@ import os
 # that directory
 fl = []
 
-fotoDir = default_folder+"/fotos/"
-collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-albumDir = default_folder+"/Album/"
-imageColDir = default_folder+"/ImageCollections/"
+# fotoDir = default_folder+"/fotos/"
+# collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+# albumDir = default_folder+"/Album/"
+# imageColDir = default_folder+"/ImageCollections/"
+# defaultCollectionDir = default_folder + '/DefCPCollection'
 
-if not os.path.isdir(fotoDir):
-    os.makedirs(fotoDir)
-if not os.path.isdir(collectionDir):    
-    os.makedirs(collectionDir)
-if not os.path.isdir(albumDir):    
-    os.makedirs(albumDir)
-if not os.path.isdir(imageColDir):    
-    os.makedirs(imageColDir)
+# if not os.path.isdir(fotoDir):
+#     os.makedirs(fotoDir)
+# if not os.path.isdir(collectionDir):    
+#     os.makedirs(collectionDir)
+# if not os.path.isdir(albumDir):    
+#     os.makedirs(albumDir)
+# if not os.path.isdir(imageColDir):    
+#     os.makedirs(imageColDir)
+
+CPImage.makeAllCPImages(fotoDir, albumDir)
+print(CPImage.countFilesInFolders(albumDir))
 
 
 """image1 = CPImage(fl[16], AnaLibanoDir)
