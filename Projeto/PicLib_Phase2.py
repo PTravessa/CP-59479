@@ -27,6 +27,20 @@ import math
 import copy
 import datetime
 
+# User Example
+# default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
+
+# folder_popup = FolderSelectionPopup(default_folder)
+# folder_popup.select_folder()
+
+# selected_folder = folder_popup.get_selected_folder()
+# if selected_folder:
+#     default_folder = selected_folder
+#     if not default_folder.endswith("/"):
+#         default_folder += "/"
+#     print("Selected folder:", default_folder)
+# else:
+#     print("No folder selected, using default folder:", default_folder)
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -269,7 +283,7 @@ class PicLib(App):
 
     def add_zip_and_rot_to_buttonBar(self):
         self.create_zip_button()
-        self.rotate_button = self.create_rotate_button()
+        self.create_rotate_button()
         self.button_bar.add_widget(self.zip_button)
         self.button_bar.add_widget(self.rotate_button)
 
@@ -499,7 +513,7 @@ class PicLib(App):
             selectableImg.set_date(date)
             popup.dismiss()
         self.update_image_display()
-        self.dateLabel.text = "Date: "+date
+        self.dateLabel.text = "Date: "+date[:10]
 
     def create_date_label(self):
         image = None
@@ -508,11 +522,11 @@ class PicLib(App):
         print("len(SelectableImage.selected_images) == 1")
         if image is not None:
             if len(SelectableImage.selected_images) == 1:
-                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=15)
+                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=20)
             else:
-                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=15)
+                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
         else:
-            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=15)
+            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
 
         return self.dateLabel
 
@@ -536,35 +550,6 @@ class PicLib(App):
         )
         Userselectbutton.bind(on_release=self.open_folder_selection_popup)
         image_display.add_widget(Userselectbutton)
-
-    def open_folder_selection_popup(self, instance):
-        default_folder = os.getcwd()
-
-        folder_popup = FolderSelectionPopup(default_folder)
-        folder_popup.select_folder()
-
-        selected_folder = folder_popup.get_selected_folder()
-        if selected_folder is not None:  # Check if a folder is selected
-            default_folder = selected_folder
-            if not default_folder.endswith("/"):
-                default_folder += "/"
-            print("Selected folder:", default_folder)
-            # Load and display images from folder
-            self.image_folder = default_folder
-            if not os.path.isdir(self.image_folder):
-                os.mkdir(self.image_folder)
-            self.images = self.load_images_from_folder(self.image_folder)
-            self.original_images = self.load_images_from_folder(self.image_folder)  # Backup images
-            self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
-            self.update_image_display(shuffle=True)
-        else:
-            print("No folder selected")
-            # Clear the image display
-            self.image_folder = ""
-            self.images = []
-            self.original_images = []
-            self.total_pages = 0
-            self.update_image_display(shuffle=True)
 
 
     def create_button_bar(self):
@@ -724,10 +709,8 @@ class PicLib(App):
 
         start_index = (self.page_number - 1) * self.images_per_page
         end_index = self.page_number * self.images_per_page
+        if shuffle == True: random.shuffle(self.images)
         images_to_display = self.images[start_index:end_index]
-
-        if shuffle:
-            random.shuffle(images_to_display)
 
         if self.images_per_page >= 1 and self.images_per_page <= 5:
             max_images_per_row = 3
@@ -996,5 +979,35 @@ class PicLib(App):
             files.append(fileInList[0])
         self.images = files
         self.update_image_display()
+
+    def open_folder_selection_popup(self, instance):
+        default_folder = os.getcwd()
+
+        folder_popup = FolderSelectionPopup(default_folder)
+        folder_popup.select_folder()
+
+        selected_folder = folder_popup.get_selected_folder()
+        if selected_folder is not None:  # Check if a folder is selected
+            default_folder = selected_folder
+            if not default_folder.endswith("/"):
+                default_folder += "/"
+            print("Selected folder:", default_folder)
+            # Load and display images from folder
+            self.image_folder = default_folder
+            if not os.path.isdir(self.image_folder):
+                os.mkdir(self.image_folder)
+            self.images = self.load_images_from_folder(self.image_folder)
+            self.original_images = self.load_images_from_folder(self.image_folder)  # Backup images
+            self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+            self.update_image_display(shuffle=True)
+        else:
+            print("No folder selected")
+            # Clear the image display
+            self.image_folder = ""
+            self.images = []
+            self.original_images = []
+            self.total_pages = 0
+            self.update_image_display(shuffle=True)
+
 
 PicLib().run()
