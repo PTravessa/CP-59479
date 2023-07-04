@@ -8,6 +8,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import piexif #For adding a new tag to a jpg's exif
 
+default_folder= os.getcwd()
 class Serializable:
     def toJson(self, classInstance):
         #__dict__ contains attribute values of an object, show as a dictionary
@@ -20,7 +21,7 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items, dirPath="C:/Users/andre/CP/DefCPCollection"):
+    def __init__(self, filename, items, dirPath=default_folder + '/DefCPCollection'):
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -126,7 +127,7 @@ class ImageCollection(CPCollection):
     
 class CPImage(Serializable):
     images = []
-    def __init__(self, imageFile, dirPath = 'C:/Users/andre/CP/'):
+    def __init__(self, imageFile, dirPath = default_folder):
         """
         CPImage class.
         Args: Filename of the image file.
@@ -224,7 +225,7 @@ class CPImage(Serializable):
             print("Image file already in folder")        
         return CPImage(cpImage.imageFile, newPath)
 
-    def copyToFolder(self, folder_path='C:/Users/andre/CP/collectionsRootFolder'):
+    def copyToFolder(self, folder_path= default_folder + '/collectionsRootFolder'):
         """
         Copies the image to the folder.
         """
@@ -495,24 +496,11 @@ import os
 # that directory
 fl = []
 
-#Substituir estes folders pelos seus e criar novos
-AnaLibanoDir = "C:/Users/andre/CP/fotos/AnaLibano/"
-fotoDir = "C:/Users/andre/CP/fotos/"
-collectionDir = "C:/Users/andre/CP/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-albumDir = "C:/Users/andre/CP/Album/"
-imageColDir = "C:/Users/andre/CP/ImageCollections/"
-
-from PicLib_Phase2 import default_folder
-# default_folder = "C:/Users/andre/CP/"
-AnaLibanoDir = default_folder+"/fotos/AnaLibano/"
 fotoDir = default_folder+"/fotos/"
 collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
 albumDir = default_folder+"/Album/"
 imageColDir = default_folder+"/ImageCollections/"
 
-
-if not os.path.isdir(AnaLibanoDir):
-    os.makedirs(AnaLibanoDir)
 if not os.path.isdir(fotoDir):
     os.makedirs(fotoDir)
 if not os.path.isdir(collectionDir):    
@@ -522,13 +510,6 @@ if not os.path.isdir(albumDir):
 if not os.path.isdir(imageColDir):    
     os.makedirs(imageColDir)
 
-
-for filename in os.listdir(AnaLibanoDir):
-    f = os.path.join(AnaLibanoDir, filename)
-    # checking if it is a file
-    if os.path.isfile(f):
-        # print(filename)
-        fl.append(filename)
 
 """image1 = CPImage(fl[16], AnaLibanoDir)
 image1.addTag("TestTag1")
