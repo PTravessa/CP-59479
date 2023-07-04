@@ -2,19 +2,23 @@
 Pic-Lib Project \
 Jens Andreas & Pedro Travessa \
 FC60919 and FC59479 \
-**Make sure to search where to change paths in both PicLib_Phase1/PicLib_Phase2, find box -> #ChangeDir ->results is where is need to change paths.**
-# Project Part 1:
+# Project Part 1: 
+*PicLib_Phase1.py* \
 Creates a library enables you to create a collection based on the images given by the desired folder. \
-**Must change the path directly in code** so you´re able to run it and create instances.
-# Project Part 2:
+It creates a named folder "Album" in your directory with the images ordered by Date.
+# Project Part 2: 
+*PicLib_Phase2.py* \
 This App enables an edit interface for **.jpg** or **.png** images and allows the user to search and interact with the metadata (Adding or removing Tags and Date) \
 \
 **Must replace path directly in code:** \
 Imports all **.jpg** or **.png** files in the folder into the image display box. \
 \
 Buttons displayed at start:
+- **Date button**, Displays the ate of an selected image
+- **Page Navigation Arrow buttons**, If possible Navigate trough the pages.
 - **T button**, the user opens the TagCollection (afterwards the user can choose the **+T button** which has the functionality to add a new Tag driven by a popup). 
 - **S button**, the user can search the shown images with the mentioned Tag from TagCollection.
+- **Change Image Display button**,
 
 Selecting one and only one image:
 - The **R90 button** appears when one image at a time is selected activating it´s function(90º degree rotation).
@@ -30,4 +34,6 @@ or more images.
 **Observations:** \
 When searching for tags it will display until 3 times the picture with that tag. \
 You can add a tag to the image directly but it won display in the Tag Collection to solve that you must add a tag in tag collection and then add the tag you added with add tag button to the selected image/images.
-Everything working as desired :)
+**Filenames:** \
+*PicLib_Phase1.py* \
+*PicLib_Phase2.py*
