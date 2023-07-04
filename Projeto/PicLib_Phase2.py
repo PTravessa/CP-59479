@@ -27,20 +27,6 @@ import math
 import copy
 import datetime
 
-# User Example
-default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
-
-folder_popup = FolderSelectionPopup(default_folder)
-folder_popup.select_folder()
-
-selected_folder = folder_popup.get_selected_folder()
-if selected_folder:
-    default_folder = selected_folder
-    if not default_folder.endswith("/"):
-        default_folder += "/"
-    print("Selected folder:", default_folder)
-else:
-    print("No folder selected, using default folder:", default_folder)
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -522,11 +508,11 @@ class PicLib(App):
         print("len(SelectableImage.selected_images) == 1")
         if image is not None:
             if len(SelectableImage.selected_images) == 1:
-                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=20)
+                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=15)
             else:
-                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
+                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=15)
         else:
-            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
+            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=15)
 
         return self.dateLabel
 
@@ -543,16 +529,43 @@ class PicLib(App):
 
         self.image_display = image_display
 
-        # Load and display images from folder
-        # image_folder = r'C:\Users\ASUS\Desktop\Project Pics\AnaLibano'
-        # self.image_folder = 'C:/Users/andre/CP/fotos/'
-        self.image_folder = default_folder 
-        if not os.path.isdir(self.image_folder):
-            os.mkdir(self.image_folder)
-        self.images = self.load_images_from_folder(self.image_folder)
-        self.original_images = self.load_images_from_folder(self.image_folder) #Backup images
-        self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
-        self.update_image_display(shuffle=True)
+        Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
+                                  +'\n\nPlease Select a Folder with the Corresponding Images to Load'
+                                  + '\n\n\n\n\n\n\n                                Click to Open a Folder',
+                                  background_color=(0, 0, 0, 1)
+        )
+        Userselectbutton.bind(on_release=self.open_folder_selection_popup)
+        image_display.add_widget(Userselectbutton)
+
+    def open_folder_selection_popup(self, instance):
+        default_folder = os.getcwd()
+
+        folder_popup = FolderSelectionPopup(default_folder)
+        folder_popup.select_folder()
+
+        selected_folder = folder_popup.get_selected_folder()
+        if selected_folder is not None:  # Check if a folder is selected
+            default_folder = selected_folder
+            if not default_folder.endswith("/"):
+                default_folder += "/"
+            print("Selected folder:", default_folder)
+            # Load and display images from folder
+            self.image_folder = default_folder
+            if not os.path.isdir(self.image_folder):
+                os.mkdir(self.image_folder)
+            self.images = self.load_images_from_folder(self.image_folder)
+            self.original_images = self.load_images_from_folder(self.image_folder)  # Backup images
+            self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+            self.update_image_display(shuffle=True)
+        else:
+            print("No folder selected")
+            # Clear the image display
+            self.image_folder = ""
+            self.images = []
+            self.original_images = []
+            self.total_pages = 0
+            self.update_image_display(shuffle=True)
+
 
     def create_button_bar(self):
         """
