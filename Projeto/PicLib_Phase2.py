@@ -75,6 +75,7 @@ class PicLib(App):
         self.tagsInImages = set()
         self.change_button = None
         self.loadColButton = None
+        self.Userselectbutton = None
 
     def build(self):
         self.create_top_row()
@@ -545,13 +546,13 @@ class PicLib(App):
 
         self.image_display = image_display
 
-        Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
+        self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
                                   +'\n\nPlease Select a Folder with the Corresponding Images to Load'
                                   + '\n\n\n\n\n\n\n                                Click to Open a Folder',
                                   background_color=(0, 0, 0, 1)
         )
-        Userselectbutton.bind(on_release=self.open_folder_selection_popup)
-        image_display.add_widget(Userselectbutton)
+        self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
+        image_display.add_widget(self.Userselectbutton)
 
 
     def create_button_bar(self):
@@ -994,6 +995,7 @@ class PicLib(App):
             s = outfile.read()
 
         data = json.loads(s)
+        print("JSON.LOADSSSSSSSSSSSSS =",data)
 
         filename = data["filename"]
         items = data["items"]
@@ -1001,11 +1003,21 @@ class PicLib(App):
         print("ImageCollection filename:", filename)
         print("Number Of Items", len(items))
 
+        imagePaths = []
         for item in items:
             image = item["Image"][0]
+            folder = item["Folder"][0]
+            imagePaths.append(folder+image)
+            print("imagePath =", str(folder+image))
             tags = item["tags"][0]
             print("Image:", image)
+            print("Folder:", folder)
             print("Tags:", tags)
+        self.images = imagePaths
+        if self.loadColButton in self.bottom_row.children:
+            self.bottom_row.remove_widget(self.loadColButton)
+        
+        self.update_image_display()
 
 
     def open_folder_selection_popup(self, instance):

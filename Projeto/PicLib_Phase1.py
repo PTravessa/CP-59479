@@ -41,7 +41,7 @@ class Serializable:
 
 
 class CPCollection(Serializable):
-    def __init__(self, filename, items, dirPath=defaultCollectionDir):
+    def __init__(self, filename, items, dirPath=imageColDir):
         self.filename = filename
         self.dirPath = dirPath
         if (items, '__iter__'): #If argument items is iterable
@@ -75,10 +75,12 @@ class CPCollection(Serializable):
     def toJson(self, item):
         # d = dict(filename=self.filename, items=[item for item in self.items])
         # jsonItem = json.dumps(item, ensure_ascii=False)
-        jsonString = json.dumps(item.__dict__["imageFile"])
+        jsonString = json.dumps(item.__dict__["dirPath"]+item.__dict__["imageFile"])
+        print("JSONSTRING ==================== ", jsonString)
+        # jsonString = json.dumps(item.__dict__["imageFile"])
         l = item.getTagsList()
 
-        return {"Image": [item.__dict__["imageFile"]], "tags": l}
+        return {"Image": [item.__dict__["imageFile"]], "Folder": [item.__dict__["dirPath"]], "tags": l}
     
     @abstractmethod
     def elementFromJson(self, dict):
@@ -562,8 +564,8 @@ fl = []
 # if not os.path.isdir(imageColDir):    
 #     os.makedirs(imageColDir)
 
-CPImage.makeAllCPImages(fotoDir, albumDir)
-print(CPImage.countFilesInFolders(albumDir))
+CPImage.makeAllCPImages(fotoDir, collectionDir)
+print(CPImage.countFilesInFolders(collectionDir))
 
 
 """image1 = CPImage(fl[16], AnaLibanoDir)
