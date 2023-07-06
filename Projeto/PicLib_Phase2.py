@@ -630,7 +630,7 @@ class PicLib(App):
         self.main_panel.remove_widget(self.tag_display)
         self.main_panel.add_widget(self.image_display)
 
-
+        self.addedTags = self.activeTags
         self.images = self.load_images_from_folder(self.image_folder)
         self.get_image_names(self.image_folder)
         
@@ -690,6 +690,10 @@ class PicLib(App):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg') and fullPath not in self.images:
                 self.images.append(fullPath)
+                imgTags = CPImage(imageFile=filename, dirPath=folder_path).getTagsList()
+                for tag in imgTags:
+                    if tag not in self.addedTags:
+                        self.addedTags.append(tag)
             elif os.path.isdir(fullPath):
                 self.load_images_from_folder(fullPath)
         return self.images
@@ -999,6 +1003,8 @@ class PicLib(App):
         if not os.path.isdir(dir):
             os.makedirs(dir)
         s = ""
+        if not os.path.isfile(dir+"imageCollection1.txt"):
+            raise FileNotFoundError("The image collection file was not found")
         with open(dir+"imageCollection1.txt", "r") as outfile:
             s = outfile.read()
 
@@ -1045,6 +1051,7 @@ class PicLib(App):
             self.image_folder = default_folder
             if not os.path.isdir(self.image_folder):
                 os.mkdir(self.image_folder)
+            self.addedTags = []
             self.images = self.load_images_from_folder(self.image_folder)
             self.original_images = self.load_images_from_folder(self.image_folder)  # Backup images
             self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page

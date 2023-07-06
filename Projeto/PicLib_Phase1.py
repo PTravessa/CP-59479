@@ -8,7 +8,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 import piexif #For adding a new tag to a jpg's exif
 
-default_folder = input("Enter the default path folder: ")
+default_folder = input("Enter the path folder for storing imageCollections and CollectionRootFolder, \nLeave as blank to store in default path (Ctr+C to quit): ")
 if not os.path.exists(default_folder):
     default_folder = os.getcwd()
     print("Default folder in piclib1 is ",default_folder)
@@ -174,8 +174,10 @@ class CPImage(Serializable):
             return self.etags.get("DateTimeOriginal")
         elif "DateTime" in self.etags:
             return self.etags.get("DateTime")
+        elif "DateTimeDigitized" in self.etags:
+            return self.etags.get("DateTimeDigitized")
         else:
-            print("No DateTimeOriginal or DateTime key in exif tags")
+            print("No DateTimeOriginal, DateTime or DateTimeDigitized key in exif tags")
             return ""
 
     def getExifTags(self):
@@ -309,6 +311,13 @@ class CPImage(Serializable):
         elif "DateTime" in etag:
             image = Image.open(self.dirPath+"/"+self.imageFile)
             i = etag.index("DateTime")
+            self.exif[etagId[i]] = date
+            # print("On datetime")
+            image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
+            image.close()
+        elif "DateTimeDigitized" in etag:
+            image = Image.open(self.dirPath+"/"+self.imageFile)
+            i = etag.index("DateTimeDigitized")
             self.exif[etagId[i]] = date
             # print("On datetime")
             image.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
