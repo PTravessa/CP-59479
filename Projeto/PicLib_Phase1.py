@@ -11,6 +11,7 @@ import piexif #For adding a new tag to a jpg's exif
 default_folder = input("Enter the default path folder: ")
 if not os.path.exists(default_folder):
     default_folder = os.getcwd()
+    print("Default folder in piclib1 is ",default_folder)
 
 fotoDir = default_folder
 collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
@@ -614,3 +615,5 @@ print(img2.getTagsList())
 print("LoadingCol")
 imgCol.loadCollection()
 print("Ended LoadingCol")"""
+
+print("Default folder is ", default_folder)

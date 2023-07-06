@@ -548,7 +548,7 @@ class PicLib(App):
 
         self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
                                   +'\n\nPlease Select a Folder with the Corresponding Images to Load'
-                                  + '\n\n\n\n\n\n\n                         Double Click to Open a Folder',
+                                  + '\n\n\n\n\n\n\n                                Click to Open a Folder',
                                   background_color=(0, 0, 0, 1)
         )
         self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
@@ -627,7 +627,7 @@ class PicLib(App):
         self.main_panel.add_widget(self.image_display)
 
 
-        self.images = self.load_images_from_folder(self.image_folder)
+        self.images = self.load_images_from_folder1(self.image_folder)
         self.get_image_names(self.image_folder)
         
         print("self.image_folder = "+str(self.image_folder))
@@ -681,7 +681,6 @@ class PicLib(App):
         return self.search_button
 
     def load_images_from_folder(self, folder_path): #Full path of image file
-        self.images =[] # Clears the list before adding images
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg'):
@@ -689,7 +688,16 @@ class PicLib(App):
             elif os.path.isdir(fullPath):
                 self.load_images_from_folder(fullPath)
         return self.images
-        
+    
+    def load_images_from_folder1(self, folder_path): #Full path of image file
+        for filename in os.listdir(folder_path):
+            fullPath = folder_path +"/"+ filename
+            if filename.endswith('.png') or filename.endswith('.jpg'):
+                self.images.append(fullPath)
+            elif os.path.isdir(fullPath):
+                self.load_images_from_folder(fullPath)
+        return self.images
+    
     def get_image_names(self, folder_path): #Name of image file
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
@@ -1001,7 +1009,8 @@ class PicLib(App):
             folder = item["Folder"][0]
             imagePaths.append(folder+image)
             print("imagePath =", str(folder+image))
-            tags = item["tags"][0]
+            if item["tags"] != []: tags = item["tags"][0]
+            else: tags = []
             print("Image:", image)
             print("Folder:", folder)
             print("Tags:", tags)
