@@ -410,6 +410,8 @@ class PicLib(App):
         popup.open()
 
     def add_tag_img(self, images, tag, popup):
+        if tag not in self.addedTags:
+            self.addedTags.append(tag)
         for key in images.keys():
             selectableImg = images[key]
             selectableImg.add_tag(tag)
