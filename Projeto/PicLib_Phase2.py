@@ -551,7 +551,7 @@ class PicLib(App):
 
         self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
                                   +'\n\nPlease Select a Folder with the Corresponding Images to Load'
-                                  + '\n\n\n\n\n\n\n                                Click to Open a Folder',
+                                  + '\n\n\n\n\n\n\n                         Double Click to Open a Folder',
                                   background_color=(0, 0, 0, 1)
         )
         self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
@@ -693,16 +693,7 @@ class PicLib(App):
             elif os.path.isdir(fullPath):
                 self.load_images_from_folder(fullPath)
         return self.images
-    
-    def load_images_from_folder1(self, folder_path): #Full path of image file
-        for filename in os.listdir(folder_path):
-            fullPath = folder_path +"/"+ filename
-            if filename.endswith('.png') or filename.endswith('.jpg'):
-                self.images.append(fullPath)
-            elif os.path.isdir(fullPath):
-                self.load_images_from_folder(fullPath)
-        return self.images
-    
+
     def get_image_names(self, folder_path): #Name of image file
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
