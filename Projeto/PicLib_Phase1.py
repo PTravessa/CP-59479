@@ -15,7 +15,6 @@ if not os.path.exists(default_folder):
 
 fotoDir = default_folder
 collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-albumDir = default_folder+"/Album/"
 imageColDir = default_folder+"/ImageCollections/"
 defaultCollectionDir = default_folder + '/DefCPCollection'
 
@@ -25,8 +24,6 @@ if not os.path.isdir(fotoDir):
     os.makedirs(fotoDir)
 if not os.path.isdir(collectionDir):    
     os.makedirs(collectionDir)
-if not os.path.isdir(albumDir):    
-    os.makedirs(albumDir)
 if not os.path.isdir(imageColDir):    
     os.makedirs(imageColDir)
 

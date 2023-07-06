@@ -471,7 +471,8 @@ class PicLib(App):
         if not zip_filename.endswith('.zip'):
             zip_filename += '.zip'
         if zip_folder == 'default':
-            zip_folder = default_folder
+            # zip_folder = default_folder
+            zip_folder = os.getcwd()
         zip_path = zip_folder+"/ZippedImageFolder/"+zip_filename 
         if not os.path.isdir(zip_folder+"/ZippedImageFolder/"):
             os.mkdir(zip_folder+"/ZippedImageFolder/")
@@ -617,6 +618,7 @@ class PicLib(App):
             self.activeTags.append(tag)
 
     def load_scene_w_tags1(self, instance):
+        SelectableImage.selected_images = {}
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
         self.button_bar = self.create_button_bar()
@@ -629,7 +631,7 @@ class PicLib(App):
         self.main_panel.add_widget(self.image_display)
 
 
-        self.images = self.load_images_from_folder1(self.image_folder)
+        self.images = self.load_images_from_folder(self.image_folder)
         self.get_image_names(self.image_folder)
         
         print("self.image_folder = "+str(self.image_folder))
@@ -683,6 +685,7 @@ class PicLib(App):
         return self.search_button
 
     def load_images_from_folder(self, folder_path): #Full path of image file
+        self.images = []
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg'):
@@ -957,7 +960,8 @@ class PicLib(App):
             cpimage = CPImage(filename, foldername)
             cpimgs.append(cpimage)
 
-        dir = default_folder+"/imageCollections/"
+        # dir = default_folder+"/imageCollections/"
+        dir = os.getcwd()+"/imageCollections/"
         if not os.path.isdir(dir):
             os.makedirs(dir)
         imgCol = ImageCollection("imageCollection1.txt", [], dir)
@@ -971,7 +975,8 @@ class PicLib(App):
         """Loads the current Collection (Not implemented)
         """
         files = []
-        dir = default_folder+"/imageCollections/"
+        # dir = default_folder+"/imageCollections/"
+        dir = os.getcwd+"/imageCollections/"
         if not os.path.isdir(dir):
             os.makedirs(dir)
         s = ""
@@ -990,6 +995,7 @@ class PicLib(App):
         """
         files = []
         dir = default_folder+"/imageCollections/"
+        dir = os.getcwd()+"/imageCollections/"
         if not os.path.isdir(dir):
             os.makedirs(dir)
         s = ""
