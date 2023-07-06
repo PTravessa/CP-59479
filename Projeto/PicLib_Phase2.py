@@ -630,8 +630,8 @@ class PicLib(App):
         self.main_panel.remove_widget(self.tag_display)
         self.main_panel.add_widget(self.image_display)
 
-        self.addedTags = self.activeTags
-        self.images = self.load_images_from_folder(self.image_folder)
+        self.addedTags = copy.deepcopy(self.activeTags)
+        self.images = self.load_images_from_folder(self.image_folder, False)
         self.get_image_names(self.image_folder)
         
         print("self.image_folder = "+str(self.image_folder))
@@ -684,16 +684,17 @@ class PicLib(App):
         self.search_button.bind(on_press=self.load_tags)
         return self.search_button
 
-    def load_images_from_folder(self, folder_path): #Full path of image file
+    def load_images_from_folder(self, folder_path, appendImgTags = True): #Full path of image file
         # self.images = []
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg') and fullPath not in self.images:
                 self.images.append(fullPath)
                 imgTags = CPImage(imageFile=filename, dirPath=folder_path).getTagsList()
-                for tag in imgTags:
-                    if tag not in self.addedTags:
-                        self.addedTags.append(tag)
+                if appendImgTags:
+                    for tag in imgTags:
+                        if tag not in self.addedTags:
+                            self.addedTags.append(tag)
             elif os.path.isdir(fullPath):
                 self.load_images_from_folder(fullPath)
         return self.images
