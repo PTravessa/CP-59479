@@ -58,6 +58,7 @@ class PicLib(App):
         self.activeTags = []
         self.images = []
         self.imageNames = []
+        self.reset = False
 
         #Buttons, BoxLayouts and labels
         self.collection_tags_button = None
@@ -76,6 +77,7 @@ class PicLib(App):
         self.change_button = None
         self.loadColButton = None
         self.Userselectbutton = None
+        self.image_folder = None
 
     def build(self):
         self.create_top_row()
@@ -577,10 +579,27 @@ class PicLib(App):
     #     self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
     #     self.rem_tag_fro.bind(on_press=self.load_tags)
     
-    def ok_button(self):
+    def ok_button(self, reset1=False):
         self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
-        self.okButton.bind(on_press=self.load_scene_w_tags1)
+        self.okButton.bind(on_press=lambda instance: self.load_scene_w_tags1(instance, reset=reset1))
         return self.okButton        
+
+    def on_reset_button(self, instance):
+        tags = []
+        images = self.images
+        for imagePath in images:
+            foldername = "/".join(imagePath.split('/')[:-1]) 
+            filename = imagePath.split('/')[-1]
+            cpimage = CPImage(filename, foldername)
+            for tag in cpimage.getTagsList():
+                if tag not in tags:
+                    tags.append(tag)
+        self.activeTags = tags
+        self.button_bar.remove_widget(self.okButton)
+        self.okButton = self.ok_button(True)
+        self.button_bar.add_widget(self.okButton, index=2)
+        # self.okButton.bind(on_press=lambda instance, reset=True: self.load_scene_w_tags1(instance, reset=reset))
+
 
     def load_tags(self, instance):
         self.main_panel.clear_widgets()
@@ -590,7 +609,18 @@ class PicLib(App):
         self.button_bar.add_widget(self.okButton)
 
         self.reset_active_tags_button = Button(text='Reset', font_size=20, background_color="#94FFDA")
-        self.reset_active_tags_button.bind(on_press=lambda *args: setattr(self, 'activeTags', []))
+
+        tags = []
+        images = self.images
+        for imagePath in images:
+            foldername = "/".join(imagePath.split('/')[:-1]) 
+            filename = imagePath.split('/')[-1]
+            cpimage = CPImage(filename, foldername)
+            for tag in cpimage.getTagsList():
+                if tag not in tags:
+                    tags.append(tag)
+        self.reset_active_tags_button.bind(on_press=self.on_reset_button)
+        # self.reset_active_tags_button.bind(on_press=on_reset_button)
 
         # self.activeTags = []
         # self.images = copy.deepcopy(self.original_images)
@@ -617,7 +647,7 @@ class PicLib(App):
             print("add_activeTag tag = "+tag)
             self.activeTags.append(tag)
 
-    def load_scene_w_tags1(self, instance):
+    def load_scene_w_tags1(self, instance, reset = False):
         SelectableImage.selected_images = {}
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
@@ -630,8 +660,13 @@ class PicLib(App):
         self.main_panel.remove_widget(self.tag_display)
         self.main_panel.add_widget(self.image_display)
 
-        self.addedTags = copy.deepcopy(self.activeTags)
-        self.images = self.load_images_from_folder(self.image_folder, False)
+        self.addedTags = self.activeTags
+        if self.image_folder is None:
+            raise Exception("You must choose a folder to be able to load tags")
+        try:
+            self.images = self.load_images_from_folder(self.image_folder)
+        except NameError as e:
+            print
         self.get_image_names(self.image_folder)
         
         print("self.image_folder = "+str(self.image_folder))
@@ -666,9 +701,10 @@ class PicLib(App):
                 dir = dir.replace("//", "/")
                 imagesWithTags.append(dir+"/"+name)
         self.images = imagesWithTags
-        if len(self.activeTags) <=0:
+        if len(self.activeTags) <=0 or reset==True:
             self.images = copy.deepcopy(self.original_images)
         print("Self.images= "+str(self.images))
+        print("Reset = ",reset)
         
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
@@ -684,17 +720,16 @@ class PicLib(App):
         self.search_button.bind(on_press=self.load_tags)
         return self.search_button
 
-    def load_images_from_folder(self, folder_path, appendImgTags = True): #Full path of image file
+    def load_images_from_folder(self, folder_path): #Full path of image file
         # self.images = []
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg') and fullPath not in self.images:
                 self.images.append(fullPath)
                 imgTags = CPImage(imageFile=filename, dirPath=folder_path).getTagsList()
-                if appendImgTags:
-                    for tag in imgTags:
-                        if tag not in self.addedTags:
-                            self.addedTags.append(tag)
+                for tag in imgTags:
+                    if tag not in self.addedTags:
+                        self.addedTags.append(tag)
             elif os.path.isdir(fullPath):
                 self.load_images_from_folder(fullPath)
         return self.images
