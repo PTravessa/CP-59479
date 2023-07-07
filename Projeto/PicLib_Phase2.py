@@ -1031,45 +1031,56 @@ class PicLib(App):
         self.update_image_display()
 
     def loadCol1(self, collection):
-        """Loads the current Collection (Not implemented)
-        """
-        files = []
-        dir = default_folder+"/imageCollections/"
-        dir = os.getcwd()+"/imageCollections/"
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-        s = ""
-        if not os.path.isfile(dir+"imageCollection1.txt"):
-            raise FileNotFoundError("The image collection file was not found")
-        with open(dir+"imageCollection1.txt", "r") as outfile:
-            s = outfile.read()
+        try:
+            files = []
+            dir = default_folder + "/imageCollections/"
+            dir = os.getcwd() + "/imageCollections/"
+            if not os.path.isdir(dir):
+                os.makedirs(dir)
+            s = ""
+            if not os.path.isfile(dir + "imageCollection1.txt"):
+                raise FileNotFoundError("The image collection file was not found")
 
-        data = json.loads(s)
-        print("JSON.LOADSSSSSSSSSSSSS =",data)
+            with open(dir + "imageCollection1.txt", "r") as outfile:
+                s = outfile.read()
 
-        filename = data["filename"]
-        items = data["items"]
+            data = json.loads(s)
+            print("JSON.LOADSSSSSSSSSSSSS =", data)
 
-        print("ImageCollection filename:", filename)
-        print("Number Of Items", len(items))
+            filename = data["filename"]
+            items = data["items"]
 
-        imagePaths = []
-        for item in items:
-            image = item["Image"][0]
-            folder = item["Folder"][0]
-            imagePaths.append(folder+image)
-            print("imagePath =", str(folder+image))
-            if item["tags"] != []: tags = item["tags"][0]
-            else: tags = []
-            print("Image:", image)
-            print("Folder:", folder)
-            print("Tags:", tags)
-        self.images = imagePaths
-        if self.loadColButton in self.bottom_row.children:
-            self.bottom_row.remove_widget(self.loadColButton)
-        
-        self.update_image_display()
+            print("ImageCollection filename:", filename)
+            print("Number Of Items", len(items))
 
+            imagePaths = []
+            for item in items:
+                image = item["Image"][0]
+                folder = item["Folder"][0]
+                imagePaths.append(folder + image)
+                print("imagePath =", str(folder + image))
+                if item["tags"] != []:
+                    tags = item["tags"][0]
+                else:
+                    tags = []
+                print("Image:", image)
+                print("Folder:", folder)
+                print("Tags:", tags)
+            self.images = imagePaths
+            if self.loadColButton in self.bottom_row.children:
+                self.bottom_row.remove_widget(self.loadColButton)
+
+            self.update_image_display()
+
+        except FileNotFoundError as e:
+            # Show the error message in a popup
+            error_message = str(e)
+            popup = Popup(title="Error", content=Label(text=error_message), size_hint=(None, None), size=(400, 200))
+            popup.open()
+            
+            # Clear the previous collection and update the image display
+            self.images = []
+            self.update_image_display()
 
     def open_folder_selection_popup(self, instance):
         default_folder = os.getcwd()
