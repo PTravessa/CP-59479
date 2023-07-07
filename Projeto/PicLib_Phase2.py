@@ -453,30 +453,28 @@ class PicLib(App):
         popup.open()
 
     def zip_files(self, images, zip_filename, zip_folder, popup):
-        """Zips files in a .zip
-
-        Args:
-            images (_type_): _description_
-            zip_filename (str): str of the zip filename 
-            zip_folder (str): 
-            popup (Popup): 
-        """
-        # # Create a ZipFile Object
+        # Updated zip_files function using adjusted path separator
         if not zip_filename.endswith('.zip'):
             zip_filename += '.zip'
+
         if zip_folder == 'default':
-            # zip_folder = default_folder
             zip_folder = os.getcwd()
-        zip_path = zip_folder+"/ZippedImageFolder/"+zip_filename 
-        if not os.path.isdir(zip_folder+"/ZippedImageFolder/"):
-            os.mkdir(zip_folder+"/ZippedImageFolder/")
+
+        zip_path = os.path.join(zip_folder, "ZippedImageFolder", zip_filename)
+        os.makedirs(os.path.dirname(zip_path), exist_ok=True)
+
         with ZipFile(zip_path, 'w') as zip_object:
-           # Adding files that need to be zipped
-           for imageKey in images:
-               images[imageKey].image_source
-            #    print("images[imageKey].image_source.split(\"\\\")[1] = " + str(images[imageKey].image_source.split("\\")[1]))
-               zip_object.write(images[imageKey].image_source, arcname=images[imageKey].image_source.split("\\")[1])
+            # Adding files that need to be zipped
+            for imageKey, image in images.items():
+                image_source = image.image_source
+
+                arcname = os.path.basename(image_source.replace("/", os.path.sep))
+
+                zip_object.write(image_source, arcname=arcname)
+
         popup.dismiss()
+
+
 
     def setNewDate(self, btn):
         last_key = list(SelectableImage.selected_images.keys())[-1]
