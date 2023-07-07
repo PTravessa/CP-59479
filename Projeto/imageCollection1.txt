@@ -1,1 +1,0 @@
-{"filename": "imageCollection1.txt", "items": [{"Image": ["IMG_20160711_163640895.jpg"]}, {"Image": ["P_20201226_145438.jpg"]}]}
