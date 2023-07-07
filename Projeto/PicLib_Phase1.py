@@ -6,6 +6,7 @@ import json
 #For exif metadata
 from PIL import Image
 from PIL.ExifTags import TAGS
+from pathlib import Path
 import piexif #For adding a new tag to a jpg's exif
 
 default_folder = input("Enter the path folder for storing imageCollections and CollectionRootFolder, \nLeave as blank to store in default path (Ctr+C to quit): ")
@@ -201,12 +202,14 @@ class CPImage(Serializable):
 
     @staticmethod
     def getAllImages(dirPath):
+        CPImage.images = []
         for filename in os.listdir(dirPath):
             fullPath = os.path.join(dirPath, filename)
-            if filename.endswith('.png') or filename.endswith('.jpg'):
+            if os.path.isfile(fullPath) and (filename.endswith('.png') or filename.endswith('.jpg')):
                 CPImage.images.append(fullPath)
             elif os.path.isdir(fullPath):
-                CPImage.getAllImages(fullPath)
+                CPImage.images.extend(CPImage.getAllImages(fullPath))
+
         return CPImage.images
     
     @staticmethod
@@ -214,50 +217,58 @@ class CPImage(Serializable):
         images = CPImage.getAllImages(dirPath)
         counter = 0
         for image in images:
-            filename = str(image.split("\\")[-1])
-            foldername = "/".join(image.split("\\")[:-1])
+            filename = str(image.split(os.sep)[-1])
+            foldername = os.sep.join(image.split(os.sep)[:-1])
             a = CPImage.makeCPImage(filename, foldername, newDirPath)
-            print("COUNTER = "+str(counter))
-            print("Date cpimage is "+str(a.getDate()))
-            counter+=1
+            print("COUNTER =", counter)
+            print("Date cpimage is", a.getDate())
+            counter += 1
 
     @staticmethod
     def makeCPImage(filename, dir_path, newDirPath):
-        if not os.path.exists(dir_path+"/"+filename):
+        if not os.path.exists(os.path.join(dir_path, filename)):
             print("The image has to exist in the specified folder")
             return None
+
         cpImage = CPImage(filename, dir_path)
         date = cpImage.getDate()
+
         if date == "":
-            newPath = newDirPath+"/No date/"
-            if not os.path.isdir(newPath): #If there is no year album, create one
-                print("newPath is "+newPath)
-                os.makedirs(newPath)
-            if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
-                shutil.copy(cpImage.dirPath+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
+            newPath = Path(newDirPath) / "No date"
+            if not newPath.is_dir():
+                print("newPath is", newPath)
+                newPath.mkdir(parents=True)
+
+            newFilePath = newPath / cpImage.imageFile
+            if not newFilePath.is_file():
+                shutil.copy(os.path.join(cpImage.dirPath, cpImage.imageFile), newFilePath)
             else:
-                print("Image file already in folder") 
-            return CPImage(cpImage.imageFile, newPath)
-        
+                print("Image file already in folder")
+
+            return CPImage(cpImage.imageFile, str(newPath))
+
         date = date.split(":")
         year = date[0]
         month = date[1]
         day = date[2].split(" ")[0]
 
-        #List of the names of sub folders of album 
-        folder_path= newDirPath
-        directoryPaths = [x[0] for x in os.walk(folder_path+"/"+year)]
-        fileNames = [x.split("/")[-1] for x in directoryPaths] 
-        newPath = folder_path+"/"+year+"/"+month+"/"+day+"/"
+        folder_path = newDirPath
+        directoryPaths = [x[0] for x in os.walk(os.path.join(folder_path, year))]
+        fileNames = [x.split(os.sep)[-1] for x in directoryPaths]
+        newPath = os.path.join(folder_path, year, month, day)
+
         print(fileNames)
         print(year)
-        if not os.path.isdir(newPath): #If there is no year album, create one
-            print("newPath is "+newPath)
+        if not os.path.isdir(newPath):
+            print("newPath is", newPath)
             os.makedirs(newPath)
-        if not os.path.isfile(newPath+"/"+cpImage.imageFile): 
-            shutil.copy(cpImage.dirPath+"/"+cpImage.imageFile, newPath+"/"+cpImage.imageFile)
+
+        newFilePath = os.path.join(newPath, cpImage.imageFile)
+        if not os.path.isfile(newFilePath):
+            shutil.copy(os.path.join(cpImage.dirPath, cpImage.imageFile), newFilePath)
         else:
-            print("Image file already in folder")        
+            print("Image file already in folder")
+
         return CPImage(cpImage.imageFile, newPath)
 
     def copyToFolder(self, folder_path= default_folder + '/collectionsRootFolder'):
