@@ -4,7 +4,7 @@ Departamento de Informática
 Collabs: FC60919 (Jens Andreas) and FC59479 (Pedro Travessa)
 Link to github: https://github.com/PTravessa/CP-59479/tree/main/Projeto
 """
-from PicLib_Phase1 import * #Must change the path for os.listdir
+from PicLib_Phase1 import * 
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.uix.label import Label
@@ -26,21 +26,6 @@ import random
 import math
 import copy
 import datetime
-
-# User Example
-# default_folder = 'C:/Users/ASUS/Desktop/TestEverything/'
-
-# folder_popup = FolderSelectionPopup(default_folder)
-# folder_popup.select_folder()
-
-# selected_folder = folder_popup.get_selected_folder()
-# if selected_folder:
-#     default_folder = selected_folder
-#     if not default_folder.endswith("/"):
-#         default_folder += "/"
-#     print("Selected folder:", default_folder)
-# else:
-#     print("No folder selected, using default folder:", default_folder)
 
 class PicLib(App):
     def __init__(self, **kwargs):
@@ -106,7 +91,11 @@ class PicLib(App):
         popup.open()
         return True
 
-    def create_top_row(self): #Toprow with a label, and a widget with it inside
+    def create_top_row(self):
+        """Create the top row of the UI.
+        Creates a BoxLayout with horizontal orientation and adds a label
+        with the title of the APP "PicLib" to it.
+        """
         self.top_row = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
         top_row_label = Label(text='PicLib', font_size=40)
         self.top_row.add_widget(top_row_label)
@@ -147,16 +136,66 @@ class PicLib(App):
         return self.bottom_row
     
     def create_loadColButton(self):
+        """Create a button to load the previous collection.
+        Creates a Button with the text "Load previous collection"
+        and sets up the event binding to the loadCol1 method.
+        """
         self.loadColButton = Button(text="     Load\n  previous\n collection",font_size=12,size_hint=(0.10,0.99))
         self.loadColButton.bind(on_press=self.loadCol1)
         return self.loadColButton
 
     def create_change_button(self):
+        """Create a button to change the image display.
+        Creates a Button widget with the text "Change Image Display" and sets up the
+        event binding to the change_images_per_page method.
+        """
         # Button to change images_per_page value
         self.change_button = Button(text = " Change \n  Image \n Display", font_size=12,background_color='#94FFDA', size_hint=(0.085,0.99))
         self.change_button.bind(on_press=self.change_images_per_page)
         return self.change_button
     
+    def create_main_panel(self):
+        """Create the main panel layout.
+        Creates a box layout widget that serves as the main panel of the application.
+        It consists of a button bar and an image display. The button bar contains various buttons for interacting with
+        the images, is initially set to show a placeholder button indicating that no folder is selected.
+        The main panel is displayed horizontally.
+        """
+        self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
+        button_bar = self.create_button_bar()
+        image_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
+
+        self.main_panel.add_widget(button_bar)
+        self.main_panel.add_widget(image_display)
+
+        self.image_display = image_display
+
+        self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
+                                  +'\n\nPlease Select a Folder with the Corresponding Images to Load'
+                                  + '\n\n\n\n\n\n\n                           Double Click to Open a Folder',
+                                  background_color=(0, 0, 0, 1)
+        )
+        self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
+        image_display.add_widget(self.Userselectbutton)
+
+    def create_button_bar(self):
+        """Create the button bar layout.
+        Creates a vertical box layout widget that serves as the button bar.
+        The button bar contains various buttons for interacting with the images, such as:
+        adding tags, searching for images, and removing tags.
+        The layout is initially empty, and buttons are added dynamically based on the selected images.
+        """
+        self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
+        self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
+
+        self.rem_tag_button = self.create_remTag_button()
+        self.collection_tags_button.bind(on_press=self.on_add_tags_button)
+        self.search_button = self.create_search_button()
+
+        self.button_bar.add_widget(self.collection_tags_button)
+        self.button_bar.add_widget(self.search_button)
+        return self.button_bar
+
     def add_pageIndex_prev_next_to_bottomRow(self):
         """
         Add page number and buttons for going back/forward in pages list
@@ -175,6 +214,11 @@ class PicLib(App):
         self.bottom_row.add_widget(next_button)
 
     def change_images_per_page(self, instance):
+        """Change the number of images to display per page.
+        Creates a popup with a text input field for the user to enter the new value
+        of images_per_page. When the user clicks the "Save" button, the new value is updated and
+        the image display is updated accordingly.
+        """
         # Create a popup to get the new value
         content = BoxLayout(orientation='vertical', spacing=10)
         input_text = TextInput(text=str(self.images_per_page), multiline=False, hint_text='Enter Number of Images to Display')
@@ -203,9 +247,15 @@ class PicLib(App):
         popup.open()
 
     def update_selected_images_label(self):
+        """Update the label and buttons based on the number of selected images.
+        Updates the label and buttons in the button_bar based on the number of
+        selected images. It adds the change_button to the bottom_row if it's not already there.
+        It updates the dateLabel, selected_images_label, and cur_img_date based on the selected
+        images. It also manages the visibility of the zip_button, rotate_button, rem_tag_button,
+        and add_tag_img_button based on the number of selected images.
+        """
         if self.change_button not in self.bottom_row.children:
             self.bottom_row.add_widget(self.change_button)
-        # self.create_change_button()
 
         self.bottom_row.remove_widget(self.dateLabel)
         self.dateLabel=self.create_date_label() #Updating dateLabel
@@ -259,13 +309,11 @@ class PicLib(App):
                 self.button_bar.remove_widget(self.rotate_button)
             if self.add_tag_img_button in self.button_bar.children:
                 self.button_bar.remove_widget(self.add_tag_img_button)
-            # self.button_bar.remove_widget(self.remove_tags_button)
 
     def updateBottomLabelTags(self):
-        """Returns a label with the selected image tags
-
-        Returns:
-            set: tags
+        """Update the label with the selected image tags.
+        Retrieves the tags from the selected image(s) and updates the bottom_row_label
+        with the tags. It returns the updated bottom_row_label.
         """
         tags = []
         if SelectableImage.selected_images != [] and len(SelectableImage.selected_images) == 1:
@@ -279,27 +327,49 @@ class PicLib(App):
         return self.bottom_row_label 
 
     def add_zip_and_rot_to_buttonBar(self):
+        """Add the zip and rotate buttons to the button bar.
+        Creates the zip button and rotate button, and adds them to the button bar.
+        """
         self.create_zip_button()
         self.create_rotate_button()
         self.button_bar.add_widget(self.zip_button)
         self.button_bar.add_widget(self.rotate_button)
 
     def create_zip_button(self):
+        """Create a zip button.
+        Creates a button with the label "Zip" and sets the font size and background color.
+        It also binds the button press event to the `zip_files_popup` method, passing the selected images.
+        """
         self.zip_button = Button(text='Zip', font_size=20, background_color='#94FFDA')
         self.zip_button.bind(on_press=lambda _, images=SelectableImage.selected_images: self.zip_files_popup(images))
         return self.zip_button
     
     def create_rotate_button(self):
+        """Create a rotate button.
+        Creates a button with the label "R90°" and sets the font size and background color.
+        It also binds the button press event to the `rotate_image` method, passing the selected image.
+        """
+
         self.rotate_button = Button(text='R90°', font_size=20, background_color='#94FFDA')
         self.rotate_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rotate_image(image))
         return self.rotate_button
     
     def create_remTag_button(self):
+        """Create a remove tag button.
+        Creates a button with the label "T-" and sets the font size and background color.
+        It also binds the button press event to the `rem_tag_page` method, passing the selected image.
+        """
         self.rem_tag_button = Button(text='T-', font_size=20, background_color='#94FFDA')
         self.rem_tag_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.rem_tag_page(image))
         return self.rem_tag_button
     
     def rem_tag_page(self, images = SelectableImage.selected_images):
+        """Remove tag from images.
+        Removes a tag from the selected images. It retrieves the tags associated with each image
+        and creates a set of unique tags. Then, it creates a tag display and adds it to the main panel.
+        Each tag button in the display is bound to the `rem_tag_image` method to remove the corresponding tag
+        from the selected images.
+        """
         self.tagsInImages = set()
         cpiImgs = []
 
@@ -308,7 +378,6 @@ class PicLib(App):
             filePath = list(images[key].image_source.split("/"))[-1]
             folderPath = list(images[key].image_source.split("/"))[:-1]
             folderPath = "/".join(folderPath)
-            # cpiImgs.append(CPImage(filePath, folderPath))
             tags = CPImage(filePath, folderPath).getTagsList()
             temp = set()
             for tag in tags:
@@ -323,17 +392,6 @@ class PicLib(App):
                     temp = temp.intersection(listOfSetsOfTags[i+1])
                     i += 1
         self.tagsInImages = temp
-
-        # for image in images:
-        #     print(list(images.values())[0].image_source.split("/"))
-        #     filePath = list(image.values())[0].image_source.split("/")[-1]
-        #     folderPath = list(image.values())[0].image_source.split("/")[:-1]
-        #     folderPath = "/".join(folderPath)
-        #     # cpiImgs.append(CPImage(filePath, folderPath))
-        #     tags = CPImage(filePath, folderPath).getTagsList()
-        #     for tag in tags:
-        #         self.tagsInImages.add(tag)
-
         print("self.tagsInImages = "+str(self.tagsInImages))
         
         if self.image_display in self.main_panel.children:
@@ -343,7 +401,6 @@ class PicLib(App):
         self.button_bar.add_widget(self.cancel_button)
         self.create_tag_display(tagList=list(self.tagsInImages))
         if self.tag_display not in self.main_panel.children:
-            # self.tag_display = self.create_tag_display(tagList=list(tagsInImages))
             self.main_panel.add_widget(self.tag_display)
         for layout in self.tag_display.children:
             for tagButton in layout.children:
@@ -356,6 +413,11 @@ class PicLib(App):
                 tagButton.bind(on_press=on_press_callback)  # Bind the helper function
 
     def rem_tag_image(self, images, tag, tagButton):
+        """Remove a specific tag from the selected images.
+        Removes the specified tag from each selected image. It also updates the `tagsInImages`
+        set by discarding the removed tag. Finally, it refreshes the tag display by creating a new tag display
+        with the updated set of tags.
+        """
         for key in images.keys():
             selectableImg = images[key]
             print("tag: "+str(tag))
@@ -364,31 +426,46 @@ class PicLib(App):
             print("tagsInImages discarded tag: "+str(tag))
             tagButton.unbind(on_press=self.rem_tag_image)
 
-        #Changed
         if self.tag_display in self.main_panel.children:
             self.main_panel.remove_widget(self.tag_display)
         self.create_tag_display(tagList=list(self.tagsInImages))
         self.on_cancel_tags_button(Button())
 
     def create_addTag_img_button(self):
+        """Create 'Add Tag' button for selected images.
+        Creates a button labeled 'T+' to add a tag to the selected images. When clicked, it opens
+        a popup where the user can enter a new tag. The tag is then added to the selected images.
+        """
         self.add_tag_img_button = Button(text='T+', font_size=20, background_color='#94FFDA')
         self.add_tag_img_button.bind(on_press=lambda _, image=SelectableImage.selected_images: self.add_tag_img_popup(image))
         return self.add_tag_img_button
 
     def rem_remTagButton(self):
+        """Remove the 'Remove Tag' button from the button bar.
+        Removes the 'Remove Tag' button from the button bar if it is currently present.
+        """
         if self.rem_tag_button in self.button_bar.children:
             self.button_bar.remove_widget(self.rem_tag_button)
 
     def rem_zipButton(self):
+        """Remove the 'Zip' button from the button bar.
+        Removes the 'Zip' button from the button bar if it is present.
+        """
         if self.zip_button in self.button_bar.children:
             self.button_bar.remove_widget(self.zip_button)
 
     def rem_rotateButton(self):
+        """Remove the 'Rotate' button from the button bar.
+        Removes the 'Rotate' button from the button bar if it is present.
+        """
         if self.rotate_button in self.button_bar.children:
             self.button_bar.remove_widget(self.rotate_button)
 
 
     def add_tag_img_popup(self, images):
+        """Open a popup to add a tag to the selected images.
+        Opens a popup window that allows the user to enter a tag name and add it to the selected images.
+        """
         popup_content = BoxLayout(orientation='vertical', padding=10)
         tag_name = TextInput(multiline=False, hint_text='Enter Tag Name')
         addTag_button = Button(text='Add Tag')
@@ -404,7 +481,10 @@ class PicLib(App):
         popup.open()
 
     def add_tag_img(self, images, tag, popup):
-        if tag not in self.addedTags:
+        """Add a tag to the selected images.
+        Adds a specified tag to each of the selected images.
+        """
+        if tag not in self.addedTags and tag !="":
             self.addedTags.append(tag)
         for key in images.keys():
             selectableImg = images[key]
@@ -415,15 +495,14 @@ class PicLib(App):
                 self.main_panel.remove_widget(self.tag_display)
         popup.dismiss()
 
-
-
-    
     def rotate_image(self, image=SelectableImage.selected_images):
+        """Rotate the selected image by 90 degrees counter-clockwise.
+        Rotates the selected image by 90 degrees counter-clockwise and saves the rotated image.
+        """
         imageId = list(image.values())[0].id
         img_path = list(image.values())[0].image_source
         print("img_path = "+str(img_path))
         original_image = PILImage.open(img_path)
-        # original_image.resize([original_image.height, original_image.width])
         rotated_img = original_image.rotate(-90, expand=True)
         width, height = original_image.size
 
@@ -431,13 +510,14 @@ class PicLib(App):
         rotated_img.save(img_path)
         self.images[imageId-1] = img_path
         SelectableImage.selected_images[imageId] = SelectableImage(img_path, id=imageId)
-        # SelectableImage.selected_images[imageId].image.rotate()
         SelectableImage.selected_images[imageId].image.reload()
-        
 
         self.update_image_display()
 
     def zip_files_popup(self, images):
+        """Open a popup to get the zip path and folder path for zipping the selected images.
+        Opens a popup with text inputs for entering the zip path and folder path. It then calls the `zip_files` method with the selected images and the entered zip path and folder path.
+        """
         # Create a popup with a text input for adding tags
         popup_content = BoxLayout(orientation='vertical', padding=10)
         zip_filename = TextInput(multiline=False, hint_text='Enter zip path')
@@ -453,6 +533,10 @@ class PicLib(App):
         popup.open()
 
     def zip_files(self, images, zip_filename, zip_folder, popup):
+        """Zip the selected images into a .zip file.
+        Takes the selected images, zip filename, zip folder, and a popup object.
+        It creates a .zip file at the specified zip path and adds the selected images to it.
+        """
         # Updated zip_files function using adjusted path separator
         if not zip_filename.endswith('.zip'):
             zip_filename += '.zip'
@@ -474,9 +558,11 @@ class PicLib(App):
 
         popup.dismiss()
 
-
-
     def setNewDate(self, btn):
+        """Set a new date for the selected image.
+        Allows the user to set a new date for the selected image. It opens a popup window with text inputs for entering the new day, month, and year. 
+        After entering the values, the user can confirm the new date with the "Confirm" button.
+        """
         last_key = list(SelectableImage.selected_images.keys())[-1]
         image = SelectableImage.selected_images[last_key]
         content = BoxLayout(orientation='horizontal')
@@ -495,6 +581,11 @@ class PicLib(App):
         popup.open()
 
     def setDate(self, images, year, month, day, popup):
+        """Set the date for the selected images.
+        Sets the date for the selected images to the specified year, month, and day.
+        The date is formatted as "YYYY:MM:DD 00:00:00". 
+        If the input values for year, month, or day are not valid, an error message popup will be displayed.
+        """
         if len(day) == 1:
             day = "0" + day
         if len(day) == 0:
@@ -521,6 +612,13 @@ class PicLib(App):
         self.dateLabel.text = "Date:" + date[:10]
 
     def create_date_label(self):
+        """Create a button for displaying the date of the selected image(s).
+        Creates a button widget that displays the date of the selected image(s).
+        If only one image is selected, the button text will be in the format "Date: YYYY-MM-DD",
+        where YYYY-MM-DD represents the date of the selected image.
+        If no image is selected or multiple images are selected, the button text will be "Date:".
+        Clicking on the button will open a popup window for setting a new date in the input format DD-MM-YYYY.
+        """
         image = None
         for key in SelectableImage.selected_images:
             image = SelectableImage.selected_images[key]
@@ -535,53 +633,20 @@ class PicLib(App):
 
         return self.dateLabel
 
-    def create_main_panel(self):
-        """
-        Creates Main Panel Layout
-        """
-        self.main_panel = BoxLayout(orientation='horizontal', size_hint=(1, 0.8))
-        button_bar = self.create_button_bar()
-        image_display = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
-
-        self.main_panel.add_widget(button_bar)
-        self.main_panel.add_widget(image_display)
-
-        self.image_display = image_display
-
-        self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
-                                  +'\n\nPlease Select a Folder with the Corresponding Images to Load'
-                                  + '\n\n\n\n\n\n\n                           Double Click to Open a Folder',
-                                  background_color=(0, 0, 0, 1)
-        )
-        self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
-        image_display.add_widget(self.Userselectbutton)
-
-
-    def create_button_bar(self):
-        """
-        Creates Button Bar Layout
-        """
-        self.button_bar = BoxLayout(orientation='vertical', size_hint=(0.1, 1))
-        self.collection_tags_button = Button(text='T', font_size=20, background_color='#94FFDA')
-
-        self.rem_tag_button = self.create_remTag_button()
-        self.collection_tags_button.bind(on_press=self.on_add_tags_button)
-        self.search_button = self.create_search_button()
-
-        self.button_bar.add_widget(self.collection_tags_button)
-        self.button_bar.add_widget(self.search_button)
-        return self.button_bar
-    
-    # def rem_tag_from_image_button(self):
-    #     self.rem_tag_image = Button(text='T-', font_size=20, background_color='#94FFDA')
-    #     self.rem_tag_fro.bind(on_press=self.load_tags)
-    
     def ok_button(self):
+        """Create an OK button.
+        Creates a button with the label "OK" that is used as a confirmation button.
+        The button has a specified font size and background color. 
+        It is bound to the `load_scene_w_tags1` method to trigger an action when pressed.
+        """
         self.okButton = Button(text="OK", font_size=20, background_color="#94FFDA")
         self.okButton.bind(on_press=self.load_scene_w_tags1)
         return self.okButton        
 
     def load_tags(self, instance):
+        """Load tags.
+        Is triggered when the user selects the "T" button to load tags. It clears the main panel and button bar, and creates the necessary buttons and layouts to display and manage tags.
+        """
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
 
@@ -591,8 +656,6 @@ class PicLib(App):
         self.reset_active_tags_button = Button(text='Reset', font_size=20, background_color="#94FFDA")
         self.reset_active_tags_button.bind(on_press=lambda *args: setattr(self, 'activeTags', []))
 
-        # self.activeTags = []
-        # self.images = copy.deepcopy(self.original_images)
         self.addTags_to_main_button = Button(text="<", font_size=20, background_color="#94FFDA")
         self.addTags_to_main_button.bind(on_press=self.on_cancel_tags_button)
         self.button_bar.add_widget(self.addTags_to_main_button)
@@ -603,7 +666,6 @@ class PicLib(App):
         self.main_panel.add_widget(self.tag_display)
         self.bottom_row.remove_widget(self.bottom_row_label)
 
-
         self.main_panel.spacing = 10
         
         for tagName in self.addedTags:
@@ -612,18 +674,25 @@ class PicLib(App):
             self.tag_display.add_widget(b)
 
     def add_active_tag(self, tag):
+        """Add active tag.
+        Is triggered when a tag button is pressed in the tag display.
+        It adds the selected tag to the list of active tags.
+        """
         if tag not in self.activeTags:
             print("add_activeTag tag = "+tag)
             self.activeTags.append(tag)
 
     def load_scene_w_tags1(self, instance):
+        """Load scene with tags.
+        Is triggered when the "OK" button is pressed after selecting tags.
+         It loads the scene based on the selected tags, filters the images, and updates the image display.
+        """
         SelectableImage.selected_images = {}
         self.main_panel.clear_widgets()
         self.button_bar.clear_widgets()
         self.button_bar = self.create_button_bar()
         self.main_panel.add_widget(self.button_bar)
 
-        # self.main_panel.add_widget(self.button_bar)
         if self.reset_active_tags_button in self.button_bar.children:
             self.button_bar.remove_widget(self.reset_active_tags_button)
         self.main_panel.remove_widget(self.tag_display)
@@ -671,19 +740,24 @@ class PicLib(App):
         
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
         self.update_image_display()
-        # self.main_panel.add_widget(self.image_display)
         self.bottom_row.clear_widgets()
-        # self.bottom_row_label = Label(text="Tags: "+str(self.activeTags)[1:-1].replace("'", ""))
         if self.bottom_row_label not in self.bottom_row.children:
             self.bottom_row.add_widget(self.bottom_row_label)
         self.add_pageIndex_prev_next_to_bottomRow()
 
     def create_search_button(self):
+        """Create search button.
+        Creates and returns a search button widget.
+        """
         self.search_button = Button(text='S', font_size=20, background_color='#94FFDA')
         self.search_button.bind(on_press=self.load_tags)
         return self.search_button
 
     def load_images_from_folder(self, folder_path):
+        """Load images from a folder.
+        Loads and returns a list of image file paths from the specified folder path.
+        It also updates the `addedTags` list with any tags found in the images.
+        """
         self.images = []
         for root, _, filenames in os.walk(folder_path):
             for filename in filenames:
@@ -697,6 +771,10 @@ class PicLib(App):
         return self.images   
     
     def get_image_names(self, folder_path): #Name of image file
+        """Get the names of image files in a folder.
+        Recursively traverses the specified folder path and retrieves
+        the names of all image files (ending with .png or .jpg) found within the folder and its sub folders.
+        """
         for filename in os.listdir(folder_path):
             fullPath = os.path.join(folder_path, filename)
             if filename.endswith('.png') or filename.endswith('.jpg'):
@@ -705,7 +783,13 @@ class PicLib(App):
                 self.get_image_names(fullPath)
         return self.imageNames
 
-    def update_image_display(self, shuffle=False): #Shuffle is false in all except first time 
+    def update_image_display(self, shuffle=False): 
+        """Update the image display with the images to be shown on the current page.
+        Clears the existing widgets in the image display and populates it
+        with the images to be displayed on the current page.
+        The images are selected based on the current page number and the number of images per page.
+        """
+        #Shuffle is false in all except first time 
         self.image_display.clear_widgets()
 
         start_index = (self.page_number - 1) * self.images_per_page
@@ -754,26 +838,40 @@ class PicLib(App):
             self.page_label.text = f'Page {self.page_number}'
 
     def on_image_selected(self, instance):
-        # Perform actions when an image is selected
+        """
+        Perform actions when an image is selected.
+        """
         print(f"Selected image: {instance.image_source}")
         
-
     def go_to_previous_page(self, instance):
+        """
+        Go to the previous page of images.
+        """
         if self.page_number > 1:
             self.page_number -= 1
             self.update_image_display()
 
     def go_to_next_page(self, instance):
+        """
+        Go to the next page of images.
+        """
         if self.page_number < self.total_pages:
             self.page_number += 1
             self.update_image_display()
 
     def get_cancel_button(self):
+        """
+        Get the cancel button assigned.
+        """
         self.cancel_button = Button(text='<', font_size=20, background_color='#94FFDA')
         self.cancel_button.bind(on_press=self.on_cancel_tags_button)
         return self.cancel_button
 
     def on_add_tags_button(self, instance):
+        """Callback function when the add tags button is pressed.
+        Removes the existing buttons from the button bar, creates and adds the save and cancel buttons,
+        and updates the main panel layout to display the tag display.
+        """
         # Remove the existing buttons from the button bar
         self.button_bar.clear_widgets()
 
@@ -794,6 +892,9 @@ class PicLib(App):
             self.main_panel.add_widget(self.tag_display)
 
     def create_tag_display(self, tagList):
+        """Creates and returns a layout for displaying tags.
+        The tags are arranged in multiple columns based on the given tag list.
+        """
         print("ctd taglist = " + str(tagList) )
         self.tag_display = BoxLayout(orientation='horizontal', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
         tag_display1 = BoxLayout(orientation='vertical', size_hint=(0.6, 1), padding=[10,10,10,10], spacing=10)
@@ -822,6 +923,11 @@ class PicLib(App):
         return self.tag_display
 
     def on_save_tags_button(self, instance):
+        """Performs actions when the "Save" button for tags is pressed.
+        Displays a popup with a text input for adding tags.
+        When the "Add" button in the popup is pressed, the entered tags are added using the add_tags method.
+        The existing buttons in the button bar are cleared and new buttons are created and added.
+        """
         # Perform actions when the "Save" button is pressed
         print("Save Tag button pressed")
 
@@ -856,6 +962,11 @@ class PicLib(App):
         self.button_bar.add_widget(cancel_button)
 
     def on_del_tags_button(self, instance):
+        """Performs actions when the "Delete" button for tags is pressed.
+        Displays a popup with a text input for removing tags.
+        When the "Delete" button in the popup is pressed, the entered tags are removed using the del_tag method.
+        The existing buttons in the button bar are cleared and new buttons are created and added.
+        """
         # Perform actions when the "Save" button is pressed
         print("Delete Tag button pressed")
 
@@ -890,6 +1001,10 @@ class PicLib(App):
         self.button_bar.add_widget(cancel_button)
 
     def del_tag(self, tag, popup):
+        """Removes a tag from the list of added tags.
+        Removes the specified tag from the list of added tags. If the tag does not exist
+        in the list, no action is taken.
+        """
         if tag not in self.addedTags:
             return
         self.addedTags.remove(tag)
@@ -898,6 +1013,10 @@ class PicLib(App):
         popup.dismiss()        
 
     def on_cancel_tags_button(self, instance):
+        """Performs actions when the "Cancel" button is pressed in the tag display.
+        Removes the tag display from the main panel and restores the original button bar layout.
+        It also updates the selected images label and adds the image display back to the main panel.
+        """
         if self.reset_active_tags_button in self.button_bar.children:
             self.button_bar.remove_widget(self.reset_active_tags_button)
 
@@ -916,6 +1035,10 @@ class PicLib(App):
         
 
     def add_tags(self, tags, popup):
+        """Adds tags to the selected images.
+        Adds the specified tags to the list of added tags and updates the tag display and bottom row label.
+        It also dismisses the popup window.
+        """
         # Perform actions to add tags to selected images
         addedTagsSet = set(self.addedTags)
         addedTagsSet.add(tags)
@@ -936,6 +1059,10 @@ class PicLib(App):
         popup.dismiss()
 
     def on_request_close(self, btn):
+        """Handles the request to close the application.
+        Displays a popup window asking if the collection should be saved before closing.
+        The user can choose to save the collection or discard the changes.
+        """
         content = BoxLayout(orientation = 'horizontal', spacing = '5')
         popup = Popup(title='Save Collection before leaving?', content = content, size_hint=(None, None), size=(600, 300))
         btn2 = Button(text='Yes', size_hint=(1, 0.25), on_release = self.saveImgCol)
@@ -970,26 +1097,11 @@ class PicLib(App):
         imgCol.saveCollection()
         self.stop()
 
-    def loadCol(self, collection):
-        """Loads the current Collection (Not implemented)
-        """
-        files = []
-        # dir = default_folder+"/imageCollections/"
-        dir = os.getcwd+"/imageCollections/"
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-        s = ""
-        with open(dir+"imageCollection1.txt", "r") as outfile:
-            s = outfile.read()
-
-        d = json.loads(s) 
-        for d1 in d["items"][0]:
-            fileInList = d1["Image"]
-            files.append(fileInList[0])
-        self.images = files
-        self.update_image_display()
-
     def loadCol1(self, collection):
+        """Loads an image collection from a file.
+        Reads the image collection data from a file and populates the application
+        with the images and tags from the collection.
+        """
         try:
             files = []
             dir = default_folder + "/imageCollections/"
@@ -1042,6 +1154,11 @@ class PicLib(App):
             self.update_image_display()
 
     def open_folder_selection_popup(self, instance):
+        """Opens a folder selection popup and loads images from the selected folder.
+        Opens a popup window for selecting a folder on the system. Once a folder
+        is selected, the method loads and displays the images from that folder in the application.
+        The method also initializes the necessary variables for image handling.
+        """
         default_folder = os.getcwd()
 
         folder_popup = FolderSelectionPopup(default_folder)
