@@ -15,7 +15,7 @@ if not os.path.exists(default_folder):
     print("Default folder in piclib1 is ",default_folder)
 
 fotoDir = default_folder
-collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
+collectionDir = default_folder+"/CollectionsRootFolder/"
 imageColDir = default_folder+"/ImageCollections/"
 defaultCollectionDir = default_folder + '/DefCPCollection'
 
@@ -31,6 +31,7 @@ if not os.path.isdir(imageColDir):
 class Serializable:
     def toJson(self, classInstance):
         #__dict__ contains attribute values of an object, show as a dictionary
+
         return classInstance.__dict__
     
     @staticmethod
@@ -69,14 +70,23 @@ class CPCollection(Serializable):
             outfile.write(s)
 
     def size(self):
+        """Returns the number of items in the collection
+
+        Returns:
+            len(self.items)
+        """
         return len(self.items)
 
     def toJson(self, item):
-        # d = dict(filename=self.filename, items=[item for item in self.items])
-        # jsonItem = json.dumps(item, ensure_ascii=False)
+        """Creates and returns a dictionary of an item of the collection
+
+        Args:
+            item (Any) 
+
+        Returns:
+            _string_: string of a json dictionary
+        """
         jsonString = json.dumps(item.__dict__["dirPath"]+item.__dict__["imageFile"])
-        print("JSONSTRING ==================== ", jsonString)
-        # jsonString = json.dumps(item.__dict__["imageFile"])
         l = item.getTagsList()
 
         return {"Image": [item.__dict__["imageFile"]], "Folder": [item.__dict__["dirPath"]], "tags": l}
@@ -87,6 +97,9 @@ class CPCollection(Serializable):
     
     def loadCollection(self):
         #with open('C://Users//ASUS//Desktop//Project Pics//'+ self.filename, "r") as openfile:
+        """Loads and prints the values of the collection
+        Must have a saved collection for it to work 
+        """
         with open(self.dirPath+ self.filename, "r") as openfile:
             json_object = json.load(openfile)
 
@@ -107,7 +120,7 @@ class ImageCollection(CPCollection):
         """Returns a CPImage
 
         Args:
-            json (_dict_): _item.__dict___
+            json (_dict_): item.__dict___
 
         Returns:
             _CPImage_: __
@@ -119,6 +132,14 @@ class ImageCollection(CPCollection):
     #add for collection
     @staticmethod
     def scanFolder(folder):
+        """Returns a list of all json files in a folder
+
+        Args:
+            folder (str): Path of the folder
+
+        Raises:
+            Exception: The folder path does not have json files
+        """
         files = os.listdir(folder)
         jsonFiles = []
         for file in files:
@@ -130,8 +151,11 @@ class ImageCollection(CPCollection):
             raise Exception("No json files found in folder")
 
 
-
     def findWithTag(self, tag):
+        """Returns all CPImage Instances with a specified tag
+
+        Args:
+            tag (str): Tag of the CPImage instance"""
         imgsWithTag = []
         for cpImg in self.items:
             if tag in cpImg.getTagsList():
@@ -184,7 +208,7 @@ class CPImage(Serializable):
     def getExifTags(self):
         """
         Gets the EXIF tags of the image.
-        Returns: Dictionary containing the EXIF tags and their values.
+        Returns: Dictionary (dict) containing the EXIF tags and their values.
         """
         # Define the new Exif tag ID and name
         TAG_ID = 0x1234
@@ -202,6 +226,13 @@ class CPImage(Serializable):
 
     @staticmethod
     def getAllImages(dirPath):
+        """Finds all jpg and png files in a folder and makes a list of CPImage instances of it
+    
+        Includes CPImage instances of files in subfolders in folder
+
+        Args:
+            dirPath (str): path of the folder
+        """
         CPImage.images = []
         for root, dirs, files in os.walk(dirPath):
             for filename in files:
@@ -213,6 +244,16 @@ class CPImage(Serializable):
     
     @staticmethod
     def makeAllCPImages(dirPath, newDirPath):
+        """Creates an album of the images 
+
+        For each image, creates 3 subfolders representing its year, month and day, in day a copy of the original image is stored. All is stored in newDirPath.
+        
+        Includes images in subfolders of the dirPath
+
+        Args:
+            dirPath (str): Path of the folder
+            newDirPath (_type_): Path of the album folder
+        """
         images = CPImage.getAllImages(dirPath)
         counter = 0
         for image in images:
@@ -225,6 +266,18 @@ class CPImage(Serializable):
 
     @staticmethod
     def makeCPImage(filename, dir_path, newDirPath):
+        """Creates a CPImage instance of an image file
+
+        Stores a copy of the image in folder newDirPath, and creates 3 subfolders as newDirPath/year/month/day/imageCopy
+
+        Args:
+            filename (str): Name of the file
+            dir_path (str): Path of the folder the file is stored in
+            newDirPath (_type_): Path of the folder to store a copy of the image
+
+        Returns:
+            CPImage: CPImage instance of the new image file
+        """
         if not os.path.exists(os.path.join(dir_path, filename)):
             print("The image has to exist in the specified folder")
             return None
@@ -370,14 +423,12 @@ class CPImage(Serializable):
     
     @staticmethod
     def fromJson(jsonDict):
-        #I think jsonDict[0] will be a filename
         if "filename" in jsonDict:
             return CPImage(jsonDict["filename"])
         cpImage = CPImage(jsonDict[0])
 
-    #toJson() Ja definido no Serializable
     def toJson(self, filename): 
-        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etag = [] 
         etagId = []
         for etag_id in self.exif:
             etag.append(TAGS.get(etag_id, etag_id))
@@ -399,7 +450,7 @@ class CPImage(Serializable):
         """
         if tag == "":
             print("Error: Tag can't be an empty string")
-            return  # Cancels the operation and stays in the app
+            return  
         
         etag = []  # tag dos metadados, nao relacionados a classe tag
         etagId = []
@@ -409,9 +460,8 @@ class CPImage(Serializable):
                 etagId.append(etag_id)
         except ValueError as e:
             print("Error:", str(e))
-            return  # Cancels the operation and stays in the app
+            return  
 
-        # Open the image file
         img = Image.open(self.dirPath+"/"+self.imageFile)
         
         TAG_ID = 4660
@@ -425,16 +475,12 @@ class CPImage(Serializable):
         if "Tags" in etag:
             if not self.hasTag(tag):
                 TAG_ID = 4660
-                # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
                 tempD = self.exif[TAG_ID]
-                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
                 s = json.dumps(str(self.exif[TAG_ID]) +", "+str(tag), ensure_ascii=False)
                 s=str(s).replace("\\", "")
                 s=str(s).replace("\"", "")
 
-                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
                 self.exif[TAG_ID] = s
-                # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
                 img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
                 img.close()
 
@@ -442,13 +488,12 @@ class CPImage(Serializable):
         """
         Removes a tag string from the exif metadata of the image.
         """ 
-        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etag = [] 
         etagId = []
         for etag_id in self.exif:
             etag.append(TAGS.get(etag_id, etag_id))
             etagId.append(etag_id)
 
-        # Open the image file
         img = Image.open(self.dirPath+"/"+self.imageFile)
         
         TAG_ID = 4660
@@ -458,20 +503,13 @@ class CPImage(Serializable):
         if "Tags" in etag:
             if self.hasTag(tag):
                 TAG_ID = 4660
-                # tempD = {TAG_ID: self.exif[TAG_ID] +(3,)}
                 tempD = self.exif[TAG_ID]
                 tl = self.getTagsList()
                 tl.remove(tag)
                 s = ", ".join(tl)
-                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +str({s:tag},))
                 s = json.dumps(s, ensure_ascii=False)#str(tl, ensure_ascii=False)
-                print(s)
-                # s=str(s).replace("\\", "")
-                # s=str(s).replace("\"", "")
 
-                # self.exif[TAG_ID] = json.dumps(self.exif[TAG_ID] +", "+str(tag))
                 self.exif[TAG_ID] = s
-                # # print("json.dumps(tempD[TAG_ID]) = " + str(json.dumps(tempD[TAG_ID])))
                 img.save(self.dirPath+"/"+self.imageFile, exif = self.exif)
                 img.close()
             else:
@@ -484,7 +522,7 @@ class CPImage(Serializable):
         Args: tag (_str_)
         Returns: _bool_
         """
-        etag = [] #tag dos metadados, nao relacionados a classe tag
+        etag = [] 
         etagId = []
         for etag_id in self.exif:
             etag.append(TAGS.get(etag_id, etag_id))
@@ -502,7 +540,8 @@ class CPImage(Serializable):
         return False
     
     def getTags(self):
-        etag = [] #tag dos metadados, nao relacionados a classe tag
+        """Returns the tags in a string"""
+        etag = [] 
         etagId = []
         for etag_id in self.exif:
             etag.append(TAGS.get(etag_id, etag_id))
@@ -516,6 +555,7 @@ class CPImage(Serializable):
             return ""
         
     def getTagsList(self):
+        """Returns a list of the tags as strings"""
         TAG_ID = 4660
         TAGS[TAG_ID] = "Tags"
         if TAG_ID in self.exif:
@@ -529,7 +569,7 @@ class CPImage(Serializable):
         
     @staticmethod
     def countFilesInFolders(folder_path):
-        """Returns the number of png and jpeg files in folder with sub-folders
+        """Returns the number of png and jpg files in folder with sub-folders
 
         Args:
             folder_path (str)
@@ -558,78 +598,8 @@ TAGS[TAG_ID] = "Tags"
 # Look up the tag ID for the "SomethingNew" tag
 new_tag_id = TAGS.get("Tags")
 
-# path = "C:/Users/andre/CP/fotos/AnaLibano" # Path Andreas
-import os
-# assign directory
- 
-# iterate over files in
-# that directory
-fl = []
-
-# fotoDir = default_folder+"/fotos/"
-# collectionDir = default_folder+"/CollectionsRootFolder/" #Tem que se fazer um novo CollectionsRootFolder se nao tiver
-# albumDir = default_folder+"/Album/"
-# imageColDir = default_folder+"/ImageCollections/"
-# defaultCollectionDir = default_folder + '/DefCPCollection'
-
-# if not os.path.isdir(fotoDir):
-#     os.makedirs(fotoDir)
-# if not os.path.isdir(collectionDir):    
-#     os.makedirs(collectionDir)
-# if not os.path.isdir(albumDir):    
-#     os.makedirs(albumDir)
-# if not os.path.isdir(imageColDir):    
-#     os.makedirs(imageColDir)
 
 CPImage.makeAllCPImages(fotoDir, collectionDir)
 print(CPImage.countFilesInFolders(collectionDir))
-
-
-"""image1 = CPImage(fl[16], AnaLibanoDir)
-image1.addTag("TestTag1")
-image1.addTag("TestTag5")
-img2 = CPImage(fl[4], AnaLibanoDir)
-img3 = CPImage(fl[5], AnaLibanoDir)
-img3.addTag("TestTag5")
-img3.addTag("TestTag7")
-img2.addTag("TestTag5")
-
-print("\n "+str(image1.__dict__))
-
-#TAG Testing
-print("image1.getTags() ")
-print(image1.getTags())
-print("\n image1 exif tags "+str(image1.getTags()))
-print("\n img2 exif tags "+str(img2.getTags()))
-print("\n img2 remove tag")
-img2.removeTag("TestTag2")
-print("\n img2 exif tags "+str(img2.getTags()))
-
-#ImageCollection Testing
-imgCol = ImageCollection("imageCollection1.txt", [image1], "C:/Users/andre/CP/ImageCollections/")
-imgCol.registerItem(img2)
-imgCol.registerItem(image1)
-imgCol.registerItem(img3)
-imgCol.saveCollection()
-
-print("LoadingCol")
-imgCol.loadCollection()
-print("Ended LoadingCol")
-
-image1.copyToFolder(collectionDir)
-
-imageTest = CPImage.makeCPImage(fl[16], AnaLibanoDir, collectionDir)
-
-CPImage.makeAllCPImages(fotoDir, albumDir)
-
-print(image1.getTagsList())
-img2.addTag("TestTag5")
-print(img2.getTagsList())
-img2.removeTag("")
-print(img2.getTagsList())
-
-print("LoadingCol")
-imgCol.loadCollection()
-print("Ended LoadingCol")"""
 
 print("Default folder is ", default_folder)
