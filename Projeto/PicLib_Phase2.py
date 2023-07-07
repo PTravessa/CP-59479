@@ -739,6 +739,7 @@ class PicLib(App):
         print("Self.images= "+str(self.images))
         
         self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
+        self.page_number=1
         self.update_image_display()
         self.bottom_row.clear_widgets()
         if self.bottom_row_label not in self.bottom_row.children:
