@@ -7,7 +7,7 @@ import json
 from PIL import Image
 from PIL.ExifTags import TAGS
 from pathlib import Path
-import piexif #For adding a new tag to a jpg's exif
+
 
 default_folder = input("Enter the path folder for storing imageCollections and CollectionRootFolder, \nLeave as blank to store in default path (Ctr+C to quit): ")
 if not os.path.exists(default_folder):
