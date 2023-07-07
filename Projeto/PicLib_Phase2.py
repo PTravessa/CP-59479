@@ -520,8 +520,8 @@ class PicLib(App):
         """
         # Create a popup with a text input for adding tags
         popup_content = BoxLayout(orientation='vertical', padding=10)
-        zip_filename = TextInput(multiline=False, hint_text='Enter zip path')
-        zip_folder = TextInput(multiline=False, hint_text='Enter full folderPath (write "default" for default)', text='')
+        zip_filename = TextInput(multiline=False, hint_text='Enter Zip Name')
+        zip_folder = TextInput(multiline=False, hint_text='Enter full folderPath \n(write "default" for default)', text='')
         zip_button = Button(text='Ok')
         zip_button.bind(on_press=lambda *args: self.zip_files(images=SelectableImage.selected_images, zip_filename=zip_filename.text, zip_folder=zip_folder.text, popup=popup))
         popup_content.add_widget(zip_filename)
@@ -1142,6 +1142,8 @@ class PicLib(App):
             if self.loadColButton in self.bottom_row.children:
                 self.bottom_row.remove_widget(self.loadColButton)
 
+            self.total_pages = (len(self.images)+self.images_per_page-1) // self.images_per_page
+            self.page_number = 1
             self.update_image_display()
 
         except FileNotFoundError as e:

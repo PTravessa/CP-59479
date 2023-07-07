@@ -35,5 +35,17 @@ or more images.
 - The **-T button** allows the user to remove the tags related to those images.
 - The **Zip button** appears, the user as the option to create a ZIP file with that image (or more).The zip path stands for the **Name of the folder**, if you want to create that zip in another folder than the one you working at(default) you can put the path to the desired folder.
 
-**Observations:** \
+**Add-On:**\
+The program also has two additional features, that are not included as part of Phase I but will be implemented later for better usability.
+
+When the user starts the app and wants to **keep track** of their work, we added a way applied to the removed tag's, in another words, **if the user removes a tag from x image/images and at the end the user wants to know each images he did removed the tag's, the Search button will display a blank tag that serves as reference to the images which tag's were removed**. This blank tag **won´t** display at Tag Collection because it's not a tag it's a reference for those images that the user cleared their tag's.
+
+Also the **Change Image Display**, permits all the ranges until 25 per page and a personalized display for certain numbers for a better and clear fitment in the layout.
+
+**Walkthrough:** \
+*Starting:*When we double click on main panel, it opens up file explorer window where users need to select their directory containing .jpeg/.jpg/PNGs. After selecting your Directory, the system will automatically import all jpg's / png's present inside that directory as well as subdirectories.
+
 When searching for a specific tag, images with that tag associated with them are available on a new screen. If you want to remove a tag from the images, you must click on the image to remove the tag and press the T- button, when removing the tag and if there are no other tags in that image, it remains on the screen in case the user wants to replace the tag (where it removes the current one and places a new one), the same happens if the user decides to remove the tag from all displayed images, in the same way they remain on the screen, but without an associated tag. To return to the initial screen after removing the tags from the images and if that is what the user wants (W:Only display the images with the same tag and remove that same tag from the images), you must select the following buttons **'S'->'Reset'- >'OK'** in order to return to the initial screen.
+
+If you want to **Save Collection** you must search with the **'S'** button for a tag or tag's assigned to the images you wanna save, after the search the screen will display those related pictures with selected tag's and in order to save the collection just **click to close** the App and on request close the program will ask you if you want to save or not that collection, Press **Yes** and the collection will be saved.
+
