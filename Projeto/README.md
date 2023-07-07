@@ -4,19 +4,21 @@ Jens Andreas & Pedro Travessa \
 FC60919 and FC59479 \
 # Project Part 1: 
 **File:** *PicLib_Phase1.py* \
-Creates a library enables you to create a collection based on the images given by the desired folder. \
+Creates a library which enables you to create a collection based on the images given by the desired folder. \
 It will be asked for a path to the respective folder before running, if the path isn't valid it will assume as correct path the current working directory. \
-It creates a named folder "Album" in your directory with the images ordered by Date, this file will be needed to work in *PicLib_Phase2.py*.
+It creates a named folder "collectionsRootFolder" in your directory with the images ordered by Date, this file will be needed to work in *PicLib_Phase2.py*. \
+It also creates a folder "ImageCollections" which will be used to store a text file with json data to represent the last saved image collection.
 # Project Part 2: 
 **File:** *PicLib_Phase2.py* \
 This App enables an edit interface for **.jpg** or **.png** images and allows the user to search and interact with the metadata (Adding or removing Tags and Date). \
-By running *PicLib_Phase2.py* both programs will run, *PicLib_Phase1.py* is started primarily where you are asked for a path input on the command line, this path is for the location of the folder that contains the images you want to use in *PicLib_Phase1.py*. When entering the path, if it is not valid, the current directory in which the program is running is considered as path, reading all the images present in it, after validating the path using the *PicLib_Phase1.py* program, it executes its function and creates a new folder named "Album", this same must be selected when using the App programmed in the *PicLib_Phase2.py*.\
+By running *PicLib_Phase2.py* both programs will run, *PicLib_Phase1.py* will run as previously mentioned, and *PicLib_Phase2.py* will start running and give you \
+the option to either select a folder from which you will visualize the images, or the option to load a previous collection assuming you have saved one. \
 \
 **Double Click on Main Panel to Open a Folder** \
 Imports all **.jpg** or **.png** files in the folder into the image display box. \
 \
 Buttons displayed at start:
-- **Date button**, Displays the ate of an selected image.
+- **Date button**, Displays the date of an selected image.
 - **Page Navigation Arrow buttons**, If possible Navigate trough the pages.
 - **T button**, the user opens the TagCollection (afterwards the user can choose the **+T button** which has the functionality to add a new Tag driven by a popup). 
 - **S button**, the user can search the shown images with the mentioned Tag from TagCollection.
