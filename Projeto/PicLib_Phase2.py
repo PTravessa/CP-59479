@@ -121,15 +121,15 @@ class PicLib(App):
         self.updateBottomLabelTags()
         self.bottom_row.add_widget(self.bottom_row_label)
 
-        prev_button = Button(text='<', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
-        next_button = Button(text='>', font_size=20,background_color='#94FFDA', size_hint=(0.1, 0.99))
+        prev_button = Button(text='\n<\n', font_size=40,background_color='#94FFDA', size_hint=(0.05, 0.99))
+        next_button = Button(text='\n>\n', font_size=40,background_color='#94FFDA', size_hint=(0.05, 0.99))
         prev_button.bind(on_press=self.go_to_previous_page)
         next_button.bind(on_press=self.go_to_next_page)
         self.bottom_row.add_widget(prev_button)
 
         self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
         self.bottom_row.add_widget(self.page_label)
-        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.13, 1))
+        self.selected_images_label = Label(text='Selected: 0', font_size=12, size_hint=(0.10, 1))
         self.bottom_row.add_widget(self.selected_images_label)
 
         self.bottom_row.add_widget(next_button)
@@ -147,7 +147,7 @@ class PicLib(App):
         return self.bottom_row
     
     def create_loadColButton(self):
-        self.loadColButton = Button(text="Load previous collection")
+        self.loadColButton = Button(text="     Load\n  previous\n collection",font_size=12,size_hint=(0.10,0.99))
         self.loadColButton.bind(on_press=self.loadCol1)
         return self.loadColButton
 
@@ -169,7 +169,7 @@ class PicLib(App):
 
         self.page_label = Label(text='Page 1', font_size=18, size_hint=(0.1, 0.98))
         self.bottom_row.add_widget(self.page_label)
-        self.selected_images_label = Label(text='Selected: 0', font_size=11, size_hint=(0.13, 1))
+        self.selected_images_label = Label(text='Selected: 0', font_size=12, size_hint=(0.10, 1))
         self.bottom_row.add_widget(self.selected_images_label)
 
         self.bottom_row.add_widget(next_button)
@@ -228,13 +228,7 @@ class PicLib(App):
                 self.bottom_row.add_widget(self.bottom_row_label, index=-1)
         
         if num_selected_images == 1 and not self.zip_button in self.button_bar.children: #and not self.rotate_button in self.button_bar.children:
-            # if self.dateLabel not in self.bottom_row.children:
-            #     self.bottom_row.add_widget(self.dateLabel)
-            # else:
-            #     self.bottom_row.remove_widget(self.dateLabel) 
-            #     self.dateLabel = self.create_date_label()
-            #     self.bottom_row.add_widget(self.dateLabel, index=0)
-            
+
             if not self.zip_button in self.button_bar.children:
                 self.button_bar.add_widget(self.create_zip_button())
             if not self.rotate_button in self.button_bar.children:
@@ -504,22 +498,29 @@ class PicLib(App):
 
     def setDate(self, images, year, month, day, popup):
         if len(day) == 1:
-            day = "0"+day
+            day = "0" + day
         if len(day) == 0:
             day = "00"
         if len(month) == 1:
-            month = "0"+month
+            month = "0" + month
         if len(month) == 0:
             month = "00"
-                
-        date = year+":"+month+":"+day+" "+"00"+":00"+":00"
-        datetime.datetime(year=int(year), month=int(month), day=int(day))
+
+        try:
+            datetime.datetime(year=int(year), month=int(month), day=int(day))
+        except ValueError:
+            # Invalid date input, display error message
+            error_popup = Popup(title='Invalid Date', content=Label(text='Please enter a valid date.'), size_hint=(0.6, 0.4))
+            error_popup.open()
+            return
+
+        date = year + ":" + month + ":" + day + " " + "00" + ":00" + ":00"
         for key in images.keys():
             selectableImg = images[key]
             selectableImg.set_date(date)
             popup.dismiss()
         self.update_image_display()
-        self.dateLabel.text = "Date: "+date[:10]
+        self.dateLabel.text = "Date:" + date[:10]
 
     def create_date_label(self):
         image = None
@@ -528,11 +529,11 @@ class PicLib(App):
         print("len(SelectableImage.selected_images) == 1")
         if image is not None:
             if len(SelectableImage.selected_images) == 1:
-                self.dateLabel = Button(text="Date: "+image.cpimage.getDate()[:10], size_hint=(0.15, 0.99), on_press=self.setNewDate, background_color='#94FFDA', font_size=20)
+                self.dateLabel = Button(text="Date:"+image.cpimage.getDate()[:10], font_size=15,size_hint=(0.15,0.99), on_press=self.setNewDate, background_color='#94FFDA')
             else:
-                self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
+                self.dateLabel = Button(text="Date:", font_size=15,size_hint=(0.15,0.99), background_color='#94FFDA')
         else:
-            self.dateLabel = Button(text="Date: ", size_hint=(0.15, 0.99), background_color='#94FFDA', font_size=20)
+            self.dateLabel = Button(text="Date:", font_size=15,size_hint=(0.15,0.99), background_color='#94FFDA')
 
         return self.dateLabel
 
@@ -551,7 +552,7 @@ class PicLib(App):
 
         self.Userselectbutton = Button(text='\n\n\n\n\n                                         Empty Panel'
                                   +'\n\nPlease Select a Folder with the Corresponding Images to Load'
-                                  + '\n\n\n\n\n\n\n                                Click to Open a Folder',
+                                  + '\n\n\n\n\n\n\n                           Double Click to Open a Folder',
                                   background_color=(0, 0, 0, 1)
         )
         self.Userselectbutton.bind(on_release=self.open_folder_selection_popup)
@@ -684,20 +685,18 @@ class PicLib(App):
         self.search_button.bind(on_press=self.load_tags)
         return self.search_button
 
-    def load_images_from_folder(self, folder_path): #Full path of image file
+    def load_images_from_folder(self, folder_path):
         self.images = []
-        for filename in os.listdir(folder_path):
-            fullPath = os.path.join(folder_path, filename)
-            if filename.endswith('.png') or filename.endswith('.jpg') and fullPath not in self.images:
-                self.images.append(fullPath)
-                imgTags = CPImage(imageFile=filename, dirPath=folder_path).getTagsList()
-                for tag in imgTags:
-                    if tag not in self.addedTags:
-                        self.addedTags.append(tag)
-            elif os.path.isdir(fullPath):
-                self.load_images_from_folder(fullPath)
-        return self.images
-    
+        for root, _, filenames in os.walk(folder_path):
+            for filename in filenames:
+                fullPath = os.path.join(root, filename)
+                if filename.endswith('.png') or filename.endswith('.jpg') and fullPath not in self.images:
+                    self.images.append(fullPath)
+                    imgTags = CPImage(imageFile=filename, dirPath=root).getTagsList()
+                    for tag in imgTags:
+                        if tag not in self.addedTags:
+                            self.addedTags.append(tag)
+        return self.images   
     
     def get_image_names(self, folder_path): #Name of image file
         for filename in os.listdir(folder_path):
@@ -716,7 +715,13 @@ class PicLib(App):
         if shuffle == True: random.shuffle(self.images)
         images_to_display = self.images[start_index:end_index]
 
-        if self.images_per_page >= 1 and self.images_per_page <= 5:
+        if self.images_per_page >= 1 and self.images_per_page <= 3:
+            max_images_per_row = 3
+            max_rows = 1
+        elif self.images_per_page == 4:
+            max_images_per_row = 2
+            max_rows = 2
+        elif self.images_per_page ==5:
             max_images_per_row = 3
             max_rows = 2
         elif self.images_per_page >= 6 and self.images_per_page <= 12:
@@ -1059,6 +1064,9 @@ class PicLib(App):
             self.original_images = self.load_images_from_folder(self.image_folder)  # Backup images
             self.total_pages = (len(self.images) + self.images_per_page - 1) // self.images_per_page
             self.update_image_display(shuffle=True)
+
+            # Remove the "Load previous collection" button from the button bar
+            self.bottom_row.remove_widget(self.loadColButton)
         else:
             print("No folder selected")
             # Clear the image display
@@ -1067,6 +1075,7 @@ class PicLib(App):
             self.original_images = []
             self.total_pages = 0
             self.update_image_display(shuffle=True)
+
 
 
 PicLib().run()
