@@ -203,14 +203,13 @@ class CPImage(Serializable):
     @staticmethod
     def getAllImages(dirPath):
         CPImage.images = []
-        for filename in os.listdir(dirPath):
-            fullPath = os.path.join(dirPath, filename)
-            if os.path.isfile(fullPath) and (filename.endswith('.png') or filename.endswith('.jpg')):
-                CPImage.images.append(fullPath)
-            elif os.path.isdir(fullPath):
-                CPImage.images.extend(CPImage.getAllImages(fullPath))
-
+        for root, dirs, files in os.walk(dirPath):
+            for filename in files:
+                fullPath = os.path.join(root, filename)
+                if filename.endswith('.png') or filename.endswith('.jpg'):
+                    CPImage.images.append(fullPath)
         return CPImage.images
+
     
     @staticmethod
     def makeAllCPImages(dirPath, newDirPath):
